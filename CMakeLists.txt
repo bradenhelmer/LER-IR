@@ -15,10 +15,19 @@ file(GLOB SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
 file(GLOB HEADERS "${CMAKE_SOURCE_DIR}/include/*.h")
 include_directories("${CMAKE_SOURCE_DIR}/include")
 
-# External
+# External LLVM
 find_package(LLVM REQUIRED CONFIG)
-set(LLVM_LINK_COMPONENTS Core Support IRReader IRPrinter)
+set(LLVM_LINK_COMPONENTS Core Support)
 llvm_map_components_to_libnames(LLVM_LIBS ${LLVM_LINK_COMPONENTS})
+
+include(TableGen)
+
+# External MLIR
+find_package(MLIR REQUIRED CONFIG)
+list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
+include(AddMLIR)
+set(MLIR_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR})
+set(MLIR_BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR})
 
 # Executable
 add_executable(ler-opt ${SRC})

@@ -4,9 +4,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/InitLLVM.h>
 
-using namespace llvm;
-
 int main(int argc, char **argv) {
-  InitLLVM(argc, argv); 
-  outs() << "Running ler-opt tool...\n";
+  llvm::InitLLVM(argc, argv);
+  llvm::outs() << "Running ler-opt tool...\n";
 }
