@@ -31,11 +31,19 @@ include(TableGen)
 set(MLIR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(MLIR_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${MLIR_INCLUDE_DIRS})
+get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
+
+# Dependent libs
+set(LER_LIBS
+	${LLVM_LIBS}
+	${dialect_libs}
+	LERIR
+)
 
 # Executable
 add_executable(ler-opt ${SRC})
 add_dependencies(ler-opt LERIR)
-target_link_libraries(ler-opt ${LLVM_LIBS})
+target_link_libraries(ler-opt ${LER_LIBS})
 
 add_subdirectory(include)
 add_subdirectory(src)

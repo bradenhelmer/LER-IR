@@ -5,14 +5,12 @@
 #define LER_OPS
 
 include "mlir/IR/OpBase.td"
-include "mlir/Dialect/Affine/IR/AffineOps.td"
-include "mlir/Dialect/SCF/IR/SCFOps.td"
 
 def LER_Dialect : Dialect {
 	let name = "ler";
 	let summary = "The LER dialect defines operations for representing LER notation.";
 
-	let cppNamespace = "::ler";
+	let cppNamespace = "::mlir::ler";
 
 	// Use affine and SCF dialects for loop representations.
 	let dependentDialects = [
