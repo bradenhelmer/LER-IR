@@ -13,24 +13,28 @@ set(CMAKE_BUILD_TYPE "Debug")
 # Headers and Sources
 file(GLOB SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
 file(GLOB HEADERS "${CMAKE_SOURCE_DIR}/include/*.h")
-include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_BINARY_DIR}/include)
 
 # External LLVM
 find_package(LLVM REQUIRED CONFIG)
+include(AddLLVM)
 set(LLVM_LINK_COMPONENTS Core Support)
 llvm_map_components_to_libnames(LLVM_LIBS ${LLVM_LINK_COMPONENTS})
-
-include(TableGen)
+include_directories(${LLVM_INCLUDE_DIRS})
 
 # External MLIR
 find_package(MLIR REQUIRED CONFIG)
 list(APPEND CMAKE_MODULE_PATH "${MLIR_CMAKE_DIR}")
 include(AddMLIR)
-set(MLIR_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR})
-set(MLIR_BINARY_DIR  ${CMAKE_CURRENT_BINARY_DIR})
+include(TableGen)
+set(MLIR_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(MLIR_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${MLIR_INCLUDE_DIRS})
 
 # Executable
 add_executable(ler-opt ${SRC})
+add_dependencies(ler-opt LERIR)
 target_link_libraries(ler-opt ${LLVM_LIBS})
 
 add_subdirectory(include)

@@ -1,0 +1,12 @@
+add_mlir_dialect_library(
+  LERIR
+  LERDialect.cpp
+  DEPENDS
+  LERIRTableGen
+  LINK_LIBS
+  PUBLIC
+  MLIRIR
+  ADDITIONAL_HEADERS
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_BINARY_DIR}/include
+)
