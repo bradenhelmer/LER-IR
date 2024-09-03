@@ -10,12 +10,12 @@ def LER_Dialect : Dialect {
 	let name = "ler";
 	let summary = "The LER dialect defines operations for representing LER notation.";
 
-	let cppNamespace = "::mlir::ler";
+	let cppNamespace = "::ler";
 
 	// Use affine and SCF dialects for loop representations.
 	let dependentDialects = [
-		"affine::AffineDialect",
-		"scf::SCFDialect"
+		"mlir::affine::AffineDialect",
+		"mlir::scf::SCFDialect"
 	];
 	
 	// Extended description

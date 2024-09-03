@@ -6,7 +6,7 @@
 #include <mlir/Dialect/SCF/IR/SCF.h>
 
 #include <ler-ir/IR/LERDialect.cpp.inc>
-using namespace mlir::ler;
+using namespace ler;
 void LERDialect::initialize() {
   addOperations<
 #define GET_OP_LIST

@@ -1,0 +1,14 @@
+Implementation Notes/Suggestions for LER-IR
+-------------------------------------------
+- Dialect implemented with existing dialects.
+	- MLIR has existing dialects for representing LER-notation specifics like affine for
+	  loops in the affine dialect, and while loops in the scf dialect.
+	- This will keep the complexity of the dialect down, with minimal operations, allowing
+	  for more time to be spent on GLORE pass implementation.
+
+- Frontend?
+	- I don't think it would be very practical to write an LER parser (generated or from scratch)
+	  acting as a frontend for the LER dialect.
+	- For testing, raw MLIR would be viable.
+		- Could use llvm-lit for regression tests with the 'ler-opt' tool built in the repo.
+		- MLIR offers functionality to write custom parsers for new dialects.
