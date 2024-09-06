@@ -52,7 +52,13 @@ static void generateTests(const std::string &dir) {
                   mlir::memref::MemRefDialect, mlir::scf::SCFDialect>();
   auto FT = builder.getFunctionType({}, {});
 
-  // Cat1
+  // Cat1: Loop Invariant Expression
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // for (i = 0; i < 100; i++) {
+  //     result = a * b;
+  //     x[i] = result + y[i];
+  // }
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   auto C1F = mlir::func::FuncOp::create(builder.getUnknownLoc(), "cat1", FT);
   builder.setInsertionPointToStart(C1F.addEntryBlock());
   auto a = QuickConstOp(builder, 20), b = QuickConstOp(builder, 30);
@@ -78,12 +84,31 @@ static void generateTests(const std::string &dir) {
   C1F.print(C1O);
   path.clear();
 
-  // Cat2
-  //
-  // Cat3
-  //
-  // Cat4
-}
+  // Cat2: Partialy Loop Invariant Expression
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // for(i = 2; i <= M; i++) {
+  //	x[i] = y[i-2]+y[i-1]+y[i+1]+y[i+2]
+  // }
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  // Cat3: Loop Invariant Loop
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // for (i = 0; i <= M; i ++) {
+  //     for (j = 0; j <= M; j++) {
+  //         for (k = 0; k <= N; k++) {
+  //             for(l = 0; l <= N; l++) {
+  //                 r[i,k] += x[i,l] * y[l,j] * s[j,k];
+  // }}}}
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  // Cat4: Partialy Loop Invariant Loop
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // for(i = 1; i <= M; i++) {
+  //     for(j = 1; j <= i; j++) {
+  //         y[i] +=x[j];
+  // }}
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 } // namespace
 
 int main(int argc, char **argv) {
