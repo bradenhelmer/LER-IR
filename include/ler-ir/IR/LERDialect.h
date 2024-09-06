@@ -7,7 +7,6 @@
 #include <mlir/IR/Dialect.h>
 
 #include <ler-ir/IR/LERDialect.h.inc>
-
 #define GET_OP_CLASSES
 #include <ler-ir/IR/LEROps.h.inc>
 #endif

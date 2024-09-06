@@ -26,7 +26,7 @@ def LER_Dialect : Dialect {
 class LEROp<string mnemonic, list<Trait> traits = []> :
     Op<LER_Dialect, mnemonic, traits>;
 
-def LER_Collection : LEROp<"collection"> {
+def CollectionOp : LEROp<"collection"> {
 	let summary = "Collection of LER formulae converted to various operations.";
 	let regions = (region SizedRegion<1>:$collection);
 

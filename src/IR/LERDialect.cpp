@@ -13,3 +13,8 @@ void LERDialect::initialize() {
 #include <ler-ir/IR/LEROps.cpp.inc>
       >();
 }
+
+#define GET_OP_CLASSES
+#include <ler-ir/IR/LEROps.cpp.inc>
+
+mlir::LogicalResult CollectionOp::verifyRegions() {}
