@@ -24,10 +24,8 @@ LERLexer::LERLexer(const std::string &InputFilename) {
 
 bool LERLexer::lexToken(LERToken *Out) {
 
-  if (isWhiteSpace(*LERBufCurr)) {
-    do {
-      LERBufCurr++;
-    } while (isWhiteSpace(*LERBufCurr));
+  while (isWhiteSpace(*LERBufCurr)) {
+    LERBufCurr++;
   }
 
   Out->Start = LERBufCurr;
@@ -147,12 +145,14 @@ bool LERLexer::lexIdentifier(LERToken *Out) {
   do {
     LERBufCurr++;
   } while (isIdentifierChar(*LERBufCurr));
+
   Out->End = LERBufCurr - 1;
   return true;
 }
 
 bool LERLexer::lexLoopIdentifier(LERToken *Out) {
   LERBufCurr++;
+
   switch (*LERBufCurr) {
   case 'R':
     Out->Kind = REGULAR_FOR;
@@ -169,6 +169,7 @@ bool LERLexer::lexLoopIdentifier(LERToken *Out) {
   default:
     return false;
   }
+
   Out->End = LERBufCurr++;
   return true;
 }
@@ -177,17 +178,22 @@ bool LERLexer::lexNumber(LERToken *Out) {
   do {
     LERBufCurr++;
   } while (isdigit(*LERBufCurr));
+
   Out->End = LERBufCurr - 1;
   return true;
 }
 
 void LERParser::lexAndPrintTokens() {
+  auto CurrOld = Lexer->LERBufCurr;
+  Lexer->LERBufCurr = Lexer->LERBufStart;
+
   while (Lexer->lexToken(&CurrToken)) {
     OUTS << TokenNames[CurrToken.Kind] << '\n';
     if (CurrToken.Kind == LER_EOF)
       break;
   }
-  Lexer->LERBufCurr = Lexer->LERBufStart;
+
+  Lexer->LERBufCurr = CurrOld;
 }
 
 } // namespace ler
