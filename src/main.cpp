@@ -1,21 +1,28 @@
 // main.cpp
 // ~~~~~~~~
 // Entry into ler-opt tool.
-#include <ler-ir/CommonUtils.h>
-#include <ler-ir/IR/LERDialect.h>
+#include <ler-ir/LERCommonUtils.h>
+#include <ler-ir/LERFrontend.h>
+#include <llvm/Support/CommandLine.h>
 #include <llvm/Support/InitLLVM.h>
-#include <mlir/Dialect/Affine/IR/AffineOps.h>
-#include <mlir/Dialect/Arith/IR/Arith.h>
-#include <mlir/Dialect/Func/IR/FuncOps.h>
-#include <mlir/Dialect/MemRef/IR/MemRef.h>
-#include <mlir/Dialect/SCF/IR/SCF.h>
-#include <mlir/IR/MLIRContext.h>
+#include <llvm/Support/MemoryBuffer.h>
+#include <llvm/Support/raw_ostream.h>
 
+namespace cl = llvm::cl;
 using namespace ler;
 
+static cl::opt<std::string> InputFilename(cl::Positional, cl::Required,
+                                          cl::desc("<input file>"));
 
 int main(int argc, char **argv) {
+  cl::ParseCommandLineOptions(argc, argv);
   llvm::InitLLVM(argc, argv);
-  llvm::outs() << "Running ler-opt tool...\n";
+  OUTS << "Running ler-opt tool...\n";
 
+  auto Parser =
+      std::make_unique<LERParser>(std::make_unique<LERLexer>(InputFilename));
+
+  Parser->lexAndPrintTokens();
+
+  return 0;
 }
