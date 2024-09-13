@@ -1,0 +1,1 @@
+^W$iteration$iteration<NOiteration|^Si|0,m|a[i]+b[i]*w$iteration$=d$iteration$

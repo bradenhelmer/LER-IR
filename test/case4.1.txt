@@ -1,0 +1,1 @@
+^Rk|0,NK|^Ri|0,M|^Sj|0,D|x[i,j]*w$k$[j]=S

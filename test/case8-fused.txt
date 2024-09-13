@@ -1,0 +1,1 @@
+^Sinter|0,iter|^Sj|0,N|b[j]=a[2*i]

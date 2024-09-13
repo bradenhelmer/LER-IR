@@ -1,0 +1,1 @@
+^Rk|2,NK|^Rj|2,NJ|^Ri|2,NI|^Rm|0,NM|(1-y$j$)*u(m,i,1,k)+y$j$*u(m,i,NJ,k)=py
