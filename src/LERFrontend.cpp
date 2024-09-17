@@ -1,9 +1,9 @@
 // Frontend.cpp
 // ~~~~~~~~~~~~
 // Token, Lexer, and Parser implementations.
-#include <iostream>
 #include <ler-ir/LERCommonUtils.h>
 #include <ler-ir/LERFrontend.h>
+#include <string>
 
 namespace ler {
 
@@ -14,11 +14,11 @@ LERLexer::LERLexer(const std::string &InputFilename) {
   if (!InputBufferOrErr) {
     ERRS << "There was an error reading '" << InputFilename
          << "'!\nError: " << InputBufferOrErr.getError().message();
+    std::exit(1);
   }
 
   LERInputBuffer = std::move(*InputBufferOrErr);
   LERBufStart = LERInputBuffer->getBufferStart();
-  LERBufEnd = LERInputBuffer->getBufferEnd();
   LERBufCurr = LERBufStart;
 }
 
@@ -187,13 +187,278 @@ void LERParser::lexAndPrintTokens() {
   auto CurrOld = Lexer->LERBufCurr;
   Lexer->LERBufCurr = Lexer->LERBufStart;
 
-  while (Lexer->lexToken(&CurrToken)) {
+  while (Lexer->lexToken(&CurrToken) && CurrToken.Kind != LER_EOF) {
     OUTS << TokenNames[CurrToken.Kind] << '\n';
-    if (CurrToken.Kind == LER_EOF)
-      break;
   }
 
   Lexer->LERBufCurr = CurrOld;
+}
+
+void LERParser::advance() {
+  if (!Lexer->lexToken(&CurrToken)) {
+    ERRS << "Error lexing token!\n";
+    std::exit(1);
+  }
+}
+
+void LERParser::parseLERStatement(LERStatement &Stmt) {
+  std::unique_ptr<LERLoop> Loop;
+  while ((Loop = parseLoop()))
+    Stmt.addLoop(std::move(Loop));
+
+  if (Stmt.getLoopCount() < 1) {
+    ERRS << "At least one loop required in LER Statement!\n";
+    std::exit(1);
+  }
+
+  Stmt.setExpression(parseExpression());
+  hardMatch(ASSIGN);
+  advance();
+  Stmt.setResult(parseResult());
+}
+
+std::unique_ptr<LERLoop> LERParser::parseLoop() {
+
+  if (isForLoop(CurrToken.Kind)) {
+    advance();
+    auto ForLoop = std::make_unique<LERForLoop>(CurrToken.Kind);
+    parseForParam(ForLoop.get());
+    return ForLoop;
+  } else if (CurrToken.Kind == WHILE) {
+    advance();
+    auto WhileLoop = std::make_unique<LERWhileLoop>();
+    std::string Subscript;
+    while (parseSubscript(&Subscript))
+      WhileLoop->addSubscript(Subscript);
+    auto ConditionExpression = parseConditionExpression();
+    if (ConditionExpression)
+      WhileLoop->attachConditionExpression(std::move(ConditionExpression));
+    hardMatch(INDEX);
+    advance();
+    return WhileLoop;
+  } else {
+    return nullptr;
+  }
+}
+
+void LERParser::parseForParam(LERForLoop *ForLoop) {
+  hardMatch(ID);
+  ForLoop->setLoopIdxVar(CurrToken.getTokenString());
+  advance();
+  hardMatch(INDEX);
+  advance();
+  ForLoop->setLBound(parseBound());
+  hardMatch(COMMA);
+  advance();
+  ForLoop->setUBound(parseBound());
+  hardMatch(INDEX);
+  advance();
+}
+
+std::string LERParser::parseBound() {
+  if (softMatch(NUMBER)) {
+    auto Num = CurrToken.getTokenString();
+    advance();
+    return Num;
+  } else if (softMatch(SUB)) {
+    advance();
+    hardMatch(NUMBER);
+    auto Num = "-" + CurrToken.getTokenString();
+    advance();
+    return Num;
+  } else {
+    hardMatch(ID);
+    auto Id = CurrToken.getTokenString();
+    advance();
+    return Id;
+  }
+}
+
+bool LERParser::parseSubscript(std::string *Out) {
+  if (softMatch(SUBSCRIPT)) {
+    advance();
+    hardMatch(ID);
+    *Out = CurrToken.getTokenString();
+    advance();
+    hardMatch(SUBSCRIPT);
+    advance();
+    return true;
+  }
+  return false;
+}
+
+std::unique_ptr<LERExpression> LERParser::parseConditionExpression() {
+  auto LHS = parseCondition();
+  if (LHS) {
+    advance();
+    if (softMatch(LAND) || softMatch(LOR)) {
+      auto Operator = CurrToken.Kind;
+      advance();
+      auto RHS = parseCondition();
+      return std::make_unique<LERBinaryOpExpression>(std::move(LHS),
+                                                     std::move(RHS), Operator);
+    }
+    return LHS;
+  }
+  return nullptr;
+}
+
+std::unique_ptr<LERExpression> LERParser::parseCondition() {
+  auto LHS = parseExpression();
+  if (!isComparisonOperator(CurrToken.Kind)) {
+    ERRS << "Parsing error: Expected comparison operator (==, !=, >, >=, <, "
+            "<=)!\n";
+    std::exit(1);
+  }
+  auto Operator = CurrToken.Kind;
+  auto RHS = parseExpression();
+  return std::make_unique<LERBinaryOpExpression>(std::move(LHS), std::move(RHS),
+                                                 Operator);
+}
+
+std::unique_ptr<LERExpression> LERParser::parseExpression() {
+  std::unique_ptr<LERExpression> LHS;
+
+  switch (CurrToken.Kind) {
+  case ID: {
+    auto Id = CurrToken.getTokenString();
+    auto VarExpr = std::make_unique<LERVarExpression>(Id);
+    advance();
+    if (softMatch(SUBSCRIPT)) {
+      std::string Subscript;
+      while (parseSubscript(&Subscript))
+        VarExpr->addSubscript(Subscript);
+    }
+    if (softMatch(OPEN_PAREN)) {
+      advance();
+      auto FuncCallExpr =
+          std::make_unique<LERFunctionCallExpression>(std::move(VarExpr));
+      std::unique_ptr<LERExpression> Parameter;
+      while ((Parameter = parseExpression()))
+        FuncCallExpr->addParameter(std::move(Parameter));
+      hardMatch(OPEN_BRACKET);
+      advance();
+      LHS = std::move(FuncCallExpr);
+      break;
+    }
+    if (softMatch(OPEN_BRACKET)) {
+      advance();
+      auto ArrayAccExpr =
+          std::make_unique<LERArrayAccessExpression>(std::move(VarExpr));
+      std::unique_ptr<LERExpression> Index;
+      while ((Index = parseExpression()))
+        ArrayAccExpr->addIndex(std::move(Index));
+      hardMatch(CLOSE_BRACKET);
+      advance();
+      LHS = std::move(ArrayAccExpr);
+      break;
+    }
+    LHS = std::move(VarExpr);
+    break;
+  }
+  case OPEN_PAREN: {
+    advance();
+    LHS = parseExpression();
+    hardMatch(CLOSE_PAREN);
+    advance();
+    break;
+  }
+  case SUB: {
+    advance();
+    hardMatch(NUMBER);
+    auto Num = "-" + CurrToken.getTokenString();
+    advance();
+    LHS = std::make_unique<LERConstantExpression>(
+        static_cast<int64_t>(std::stol(Num)));
+    break;
+  }
+  case NUMBER: {
+    auto Num = CurrToken.getTokenString();
+    advance();
+    LHS = std::make_unique<LERConstantExpression>(
+        static_cast<int64_t>(std::stol(Num)));
+    break;
+  }
+  default:
+    LHS = nullptr;
+    break;
+  }
+
+  switch (CurrToken.Kind) {
+  case COMMA:
+    advance();
+    break;
+  case ADD:
+  case SUB:
+  case MUL:
+  case DIV:
+    return parseBinaryOpExpression(std::move(LHS), BASE);
+  default:
+    break;
+  }
+
+  return LHS;
+}
+
+std::unique_ptr<LERExpression>
+LERParser::parseBinaryOpExpression(std::unique_ptr<LERExpression> LHS,
+                                   LEROperatorPrecedence Prec) {
+  LEROperatorPrecedence CurrPrec = getOperatorPrecedence(CurrToken.Kind);
+  while (true) {
+    if (CurrPrec < Prec)
+      return std::move(LHS);
+
+    LERTokenKind Op = CurrToken.Kind;
+    advance();
+
+    std::unique_ptr<LERExpression> RHS;
+    RHS = parseExpression();
+
+    if (!RHS)
+      return nullptr;
+    LEROperatorPrecedence PrevPrec = CurrPrec;
+    CurrPrec = getOperatorPrecedence(CurrToken.Kind);
+
+    if (CurrPrec < PrevPrec) {
+      RHS = parseBinaryOpExpression(std::move(RHS), PrevPrec);
+      if (!RHS)
+        return nullptr;
+    }
+    LHS = std::make_unique<LERBinaryOpExpression>(std::move(LHS),
+                                                  std::move(RHS), Op);
+  }
+}
+
+std::unique_ptr<LERExpression> LERParser::parseResult() {
+  hardMatch(ID);
+  auto Id = CurrToken.getTokenString();
+  auto VarExpr = std::make_unique<LERVarExpression>(Id);
+  advance();
+  if (softMatch(SUBSCRIPT)) {
+    std::string Subscript;
+    while (parseSubscript(&Subscript))
+      VarExpr->addSubscript(Subscript);
+  }
+  if (softMatch(OPEN_PAREN)) {
+    advance();
+    auto FuncCallExpr =
+        std::make_unique<LERFunctionCallExpression>(std::move(VarExpr));
+    std::unique_ptr<LERExpression> Parameter;
+    while ((Parameter = parseExpression()))
+      FuncCallExpr->addParameter(std::move(Parameter));
+    return FuncCallExpr;
+  }
+  if (softMatch(OPEN_BRACKET)) {
+    advance();
+    auto ArrayAccExpr =
+        std::make_unique<LERArrayAccessExpression>(std::move(VarExpr));
+    std::unique_ptr<LERExpression> Index;
+    while ((Index = parseExpression()))
+      ArrayAccExpr->addIndex(std::move(Index));
+    return ArrayAccExpr;
+  }
+
+  return VarExpr;
 }
 
 } // namespace ler

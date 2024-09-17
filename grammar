@@ -4,20 +4,20 @@ statement: l e '=' r
 ;
 
 l: loopType = (NORMAL|SUMMATION|PRODUCT) forParam l
-| loopType = OTHER subscript conditionExpression '∫' l
+| loopType = OTHER subscript conditionExpression '|' l
 |  // this should be expilon
 ;
 
-NORMAL: '^Γ'
+NORMAL: '^R'
 ;
 
-SUMMATION: '^Σ'
+SUMMATION: '^S'
 ;
 
-PRODUCT: '^Π'
+PRODUCT: '^P'
 ;
 
-OTHER: '^Ψ'
+OTHER: '^W'
 ;
 
 forParam: id '|' lBound ',' uBound '|'
@@ -66,10 +66,6 @@ subscript: '$' id '$' subscript
 |
 ;
 
-/*expression: term
-| term ADDOP expression
-;*/
-
 expression: term expressionPrime;
 
 expressionPrime: addOp expression
@@ -101,8 +97,8 @@ factor: id
 | id subscript '[' exprList ']'
 ;
 
-exprList: ' '
-| nonEmptyExprList
+exprList: nonEmptyExprList
+|
 ;
 
 nonEmptyExprList: expression

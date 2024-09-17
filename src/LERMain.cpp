@@ -22,7 +22,8 @@ int main(int argc, char **argv) {
   auto Parser =
       std::make_unique<LERParser>(std::make_unique<LERLexer>(InputFilename));
 
-  Parser->lexAndPrintTokens();
+  LERStatement AST;
+  Parser->parseLERStatement(AST);
 
   return 0;
 }
