@@ -29,6 +29,39 @@ inline static bool isForLoop(LERTokenKind Kind) {
   return Kind == REGULAR_FOR || Kind == SUMMATION || Kind == PRODUCT;
 }
 
+inline static const char *getOperatorString(LERTokenKind Kind) {
+  switch (Kind) {
+  case ADD:
+    return "+";
+  case SUB:
+    return "-";
+  case MUL:
+    return "*";
+  case DIV:
+    return "/";
+  case ASSIGN:
+    return "=";
+  case LAND:
+    return "&&";
+  case LOR:
+    return "||";
+  case EQ:
+    return "==";
+  case NE:
+    return "!=";
+  case GT:
+    return ">";
+  case GE:
+    return ">=";
+  case LT:
+    return "<";
+  case LE:
+    return "<=";
+  default:
+    return "";
+  }
+}
+
 inline static bool isComparisonOperator(LERTokenKind Kind) {
   return Kind >= EQ && Kind <= LE;
 }
@@ -58,7 +91,7 @@ struct LERToken {
   const char *Start;
   const char *End;
   LERTokenKind Kind;
-  std::string getTokenString() { return std::string(Start, End); }
+  std::string getTokenString() { return std::string(Start, (End - Start) + 1); }
 };
 
 // LEXICAL ANALYSIS
@@ -85,7 +118,9 @@ class LERLexer {
   static inline bool isWhiteSpace(char c) {
     return c == ' ' | c == '\t' | c == '\r';
   }
-  static inline bool isIdentifierChar(char c) { return isalpha(c) || c == '_'; }
+  static inline bool isIdentifierChar(char c) {
+    return isdigit(c) || isalpha(c) || c == '_';
+  }
 
 public:
   LERLexer(const std::string &InputFilename);
@@ -93,10 +128,21 @@ public:
 
 // ABSTRACT SYNTAX TREES
 // ~~~~~~~~~~~~~~~~~~~~~
-// Base classes.
-class LERLoop {};
-class LERExpression {};
 
+// Base classes.
+class LERLoop {
+public:
+  virtual ~LERLoop() = default;
+  virtual void print(uint8_t Indent = 0) = 0;
+};
+
+class LERExpression {
+public:
+  virtual ~LERExpression() = default;
+  virtual void print(uint8_t Indent = 0) = 0;
+};
+
+// Loops
 class LERForLoop : public LERLoop {
   LERTokenKind Kind;
   std::string LoopIdxVar;
@@ -108,6 +154,7 @@ public:
   void setLoopIdxVar(std::string IdxVar) { LoopIdxVar = IdxVar; }
   void setLBound(std::string LB) { LBound = LB; }
   void setUBound(std::string UB) { UBound = UB; }
+  void print(uint8_t Indent = 0) override;
 };
 
 class LERWhileLoop : public LERLoop {
@@ -119,8 +166,11 @@ public:
   void attachConditionExpression(std::unique_ptr<LERExpression> CE) {
     ConditionExpression = std::move(CE);
   }
+  inline size_t getSubscriptCount() const { return Subscripts.size(); }
+  void print(uint8_t Indent = 0) override;
 };
 
+// Expressions
 class LERVarExpression : public LERExpression {
   std::string VarName;
   llvm::SmallVector<std::string, 16> Subscripts;
@@ -128,6 +178,8 @@ class LERVarExpression : public LERExpression {
 public:
   LERVarExpression(std::string VarName) : VarName(VarName) {}
   void addSubscript(std::string SS) { Subscripts.push_back(SS); }
+  inline size_t getSubscriptCount() const { return Subscripts.size(); }
+  void print(uint8_t Indent = 0) override;
 };
 
 class LERArrayAccessExpression : public LERExpression {
@@ -140,6 +192,7 @@ public:
   void addIndex(std::unique_ptr<LERExpression> Index) {
     Indicies.push_back(std::move(Index));
   }
+  void print(uint8_t Indent = 0) override;
 };
 
 class LERBinaryOpExpression : public LERExpression {
@@ -152,6 +205,7 @@ public:
                         std::unique_ptr<LERExpression> RHS,
                         LERTokenKind Operator)
       : LHS(std::move(LHS)), RHS(std::move(RHS)), Operator(Operator) {}
+  void print(uint8_t Indent = 0) override;
 };
 
 class LERConstantExpression : public LERExpression {
@@ -160,6 +214,7 @@ class LERConstantExpression : public LERExpression {
 public:
   LERConstantExpression(int64_t Value) : Value(Value) {}
   int64_t getValue() const { return Value; }
+  void print(uint8_t Indent = 0) override;
 };
 
 class LERFunctionCallExpression : public LERExpression {
@@ -172,26 +227,40 @@ public:
   void addParameter(std::unique_ptr<LERExpression> Parameter) {
     Parameters.push_back(std::move(Parameter));
   }
+  void print(uint8_t Indent = 0) override;
 };
 
+class LERParenExpression : public LERExpression {
+  std::unique_ptr<LERExpression> Expression;
+
+public:
+  LERParenExpression(std::unique_ptr<LERExpression> Expression)
+      : Expression(std::move(Expression)) {}
+  void print(uint8_t Indent = 0) override;
+};
+
+// Main tree
 class LERStatement {
   llvm::SmallVector<std::unique_ptr<LERLoop>, 16> Loops;
   std::unique_ptr<LERExpression> Expression;
   std::unique_ptr<LERExpression> Result;
 
+  llvm::MemoryBufferRef LERSource;
+
 public:
-  LERStatement() {}
+  LERStatement(llvm::MemoryBufferRef LERSource) : LERSource(LERSource) {}
 
   void addLoop(std::unique_ptr<LERLoop> Loop) {
     Loops.push_back(std::move(Loop));
   }
   size_t getLoopCount() const { return Loops.size(); }
-  void setExpression(std::unique_ptr<LERExpression> Expression) const {
-    Expression = std::move(Expression);
+  void setExpression(std::unique_ptr<LERExpression> Expression) {
+    this->Expression = std::move(Expression);
   }
-  void setResult(std::unique_ptr<LERExpression> Result) const {
-    Result = std::move(Result);
+  void setResult(std::unique_ptr<LERExpression> Result) {
+    this->Result = std::move(Result);
   }
+  void print();
 };
 
 // PARSING
@@ -246,6 +315,10 @@ public:
 
   // Helper method to invoke the Lexer across the entire input.
   void lexAndPrintTokens();
+
+  llvm::MemoryBufferRef getSourceRef() const {
+    return Lexer->LERInputBuffer->getMemBufferRef();
+  }
 };
 
 } // namespace ler

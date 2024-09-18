@@ -14,6 +14,8 @@ using namespace ler;
 static cl::opt<std::string> InputFilename(cl::Positional, cl::Required,
                                           cl::desc("<input file>"));
 
+static cl::opt<bool> PrintAST("print-ast", cl::init(false));
+
 int main(int argc, char **argv) {
   cl::ParseCommandLineOptions(argc, argv);
   llvm::InitLLVM(argc, argv);
@@ -22,8 +24,11 @@ int main(int argc, char **argv) {
   auto Parser =
       std::make_unique<LERParser>(std::make_unique<LERLexer>(InputFilename));
 
-  LERStatement AST;
+  LERStatement AST(Parser->getSourceRef());
   Parser->parseLERStatement(AST);
+
+  if (PrintAST)
+    AST.print();
 
   return 0;
 }

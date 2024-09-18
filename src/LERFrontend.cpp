@@ -212,7 +212,6 @@ void LERParser::parseLERStatement(LERStatement &Stmt) {
   }
 
   Stmt.setExpression(parseExpression());
-  hardMatch(ASSIGN);
   advance();
   Stmt.setResult(parseResult());
 }
@@ -220,21 +219,25 @@ void LERParser::parseLERStatement(LERStatement &Stmt) {
 std::unique_ptr<LERLoop> LERParser::parseLoop() {
 
   if (isForLoop(CurrToken.Kind)) {
-    advance();
     auto ForLoop = std::make_unique<LERForLoop>(CurrToken.Kind);
+    advance();
     parseForParam(ForLoop.get());
     return ForLoop;
   } else if (CurrToken.Kind == WHILE) {
     advance();
     auto WhileLoop = std::make_unique<LERWhileLoop>();
     std::string Subscript;
+
     while (parseSubscript(&Subscript))
       WhileLoop->addSubscript(Subscript);
+
     auto ConditionExpression = parseConditionExpression();
     if (ConditionExpression)
       WhileLoop->attachConditionExpression(std::move(ConditionExpression));
+
     hardMatch(INDEX);
     advance();
+
     return WhileLoop;
   } else {
     return nullptr;
@@ -243,7 +246,8 @@ std::unique_ptr<LERLoop> LERParser::parseLoop() {
 
 void LERParser::parseForParam(LERForLoop *ForLoop) {
   hardMatch(ID);
-  ForLoop->setLoopIdxVar(CurrToken.getTokenString());
+  auto ID = CurrToken.getTokenString();
+  ForLoop->setLoopIdxVar(ID);
   advance();
   hardMatch(INDEX);
   advance();
@@ -290,7 +294,6 @@ bool LERParser::parseSubscript(std::string *Out) {
 std::unique_ptr<LERExpression> LERParser::parseConditionExpression() {
   auto LHS = parseCondition();
   if (LHS) {
-    advance();
     if (softMatch(LAND) || softMatch(LOR)) {
       auto Operator = CurrToken.Kind;
       advance();
@@ -311,6 +314,7 @@ std::unique_ptr<LERExpression> LERParser::parseCondition() {
     std::exit(1);
   }
   auto Operator = CurrToken.Kind;
+  advance();
   auto RHS = parseExpression();
   return std::make_unique<LERBinaryOpExpression>(std::move(LHS), std::move(RHS),
                                                  Operator);
@@ -336,7 +340,7 @@ std::unique_ptr<LERExpression> LERParser::parseExpression() {
       std::unique_ptr<LERExpression> Parameter;
       while ((Parameter = parseExpression()))
         FuncCallExpr->addParameter(std::move(Parameter));
-      hardMatch(OPEN_BRACKET);
+      hardMatch(CLOSE_PAREN);
       advance();
       LHS = std::move(FuncCallExpr);
       break;
@@ -358,7 +362,7 @@ std::unique_ptr<LERExpression> LERParser::parseExpression() {
   }
   case OPEN_PAREN: {
     advance();
-    LHS = parseExpression();
+    LHS = std::make_unique<LERParenExpression>(parseExpression());
     hardMatch(CLOSE_PAREN);
     advance();
     break;
@@ -366,22 +370,19 @@ std::unique_ptr<LERExpression> LERParser::parseExpression() {
   case SUB: {
     advance();
     hardMatch(NUMBER);
-    auto Num = "-" + CurrToken.getTokenString();
-    advance();
     LHS = std::make_unique<LERConstantExpression>(
-        static_cast<int64_t>(std::stol(Num)));
+        static_cast<int64_t>(-std::stol(CurrToken.getTokenString())));
+    advance();
     break;
   }
   case NUMBER: {
-    auto Num = CurrToken.getTokenString();
-    advance();
     LHS = std::make_unique<LERConstantExpression>(
-        static_cast<int64_t>(std::stol(Num)));
+        static_cast<int64_t>(std::stol(CurrToken.getTokenString())));
+    advance();
     break;
   }
   default:
-    LHS = nullptr;
-    break;
+    return nullptr;
   }
 
   switch (CurrToken.Kind) {
@@ -397,7 +398,7 @@ std::unique_ptr<LERExpression> LERParser::parseExpression() {
     break;
   }
 
-  return LHS;
+  return std::move(LHS);
 }
 
 std::unique_ptr<LERExpression>
