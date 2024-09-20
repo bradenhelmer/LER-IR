@@ -1,12 +1,14 @@
 // main.cpp
 // ~~~~~~~~
 // Entry into ler-opt tool.
+#include <ler-ir/IR/LERDialect.h>
 #include <ler-ir/LERCommonUtils.h>
 #include <ler-ir/LERFrontend.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/InitLLVM.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/raw_ostream.h>
+#include <mlir/IR/Builders.h>
 
 namespace cl = llvm::cl;
 using namespace ler;
@@ -29,6 +31,12 @@ int main(int argc, char **argv) {
 
   if (PrintAST)
     AST.print();
+
+  /*mlir::MLIRContext Context;*/
+  /*mlir::OpBuilder Builder(&Context);*/
+  /*auto Loop = Builder.create<RegularForLoopOp>(Builder.getUnknownLoc(), 1,
+   * 100, 1);*/
+  /*Loop.print(OUTS);*/
 
   return 0;
 }

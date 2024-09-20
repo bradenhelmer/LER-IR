@@ -10,11 +10,11 @@ void LERStatement::print() {
   OUTS << "LER AST for source:\n-------------------\n"
        << LERSource.getBufferStart() << "\n";
   auto LoopCount = getLoopCount();
-  for (int i = 0; i < getLoopCount(); ++i) {
+  for (int i = 0; i < LoopCount; ++i) {
     const auto &Loop = Loops[i];
     Loop->print(i);
   }
-  Expression->print(getLoopCount());
+  Expression->print(LoopCount);
   OUTS << " = ";
   Result->print();
   OUTS << '\n';
