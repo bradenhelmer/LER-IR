@@ -212,6 +212,7 @@ void LERParser::parseLERStatement(LERStatement &Stmt) {
   }
 
   Stmt.setExpression(parseExpression());
+  hardMatch(ASSIGN);
   advance();
   Stmt.setResult(parseResult());
 }

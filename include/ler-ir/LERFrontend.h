@@ -5,7 +5,11 @@
 #define LERIR_FRONTEND_H
 #include <ler-ir/LERCommonUtils.h>
 #include <llvm/Support/MemoryBuffer.h>
+#include <mlir/IR/BuiltinOps.h>
+#include <mlir/IR/Value.h>
 
+using mlir::ModuleOp;
+using mlir::Value;
 namespace ler {
 
 // TOKENS
@@ -129,17 +133,26 @@ public:
 // ABSTRACT SYNTAX TREES
 // ~~~~~~~~~~~~~~~~~~~~~
 
-// Base classes.
-class LERLoop {
+class LERASTNode {
+protected:
+  std::string StrRep = "";
+
 public:
-  virtual ~LERLoop() = default;
-  virtual void print(uint8_t Indent = 0) = 0;
+  void print(uint8_t Indent = 0) { OUTS << getStrRep(); }
+  virtual llvm::StringRef getStrRep() = 0;
 };
 
-class LERExpression {
+// Base classes.
+class LERLoop : public LERASTNode {
+public:
+  virtual ~LERLoop() = default;
+  virtual void codeGen() = 0;
+};
+
+class LERExpression : public LERASTNode {
 public:
   virtual ~LERExpression() = default;
-  virtual void print(uint8_t Indent = 0) = 0;
+  virtual Value codeGen() = 0;
 };
 
 // Loops
@@ -154,7 +167,8 @@ public:
   void setLoopIdxVar(std::string IdxVar) { LoopIdxVar = IdxVar; }
   void setLBound(std::string LB) { LBound = LB; }
   void setUBound(std::string UB) { UBound = UB; }
-  void print(uint8_t Indent = 0) override;
+  llvm::StringRef getStrRep() override;
+  void codeGen() override;
 };
 
 class LERWhileLoop : public LERLoop {
@@ -167,7 +181,8 @@ public:
     ConditionExpression = std::move(CE);
   }
   inline size_t getSubscriptCount() const { return Subscripts.size(); }
-  void print(uint8_t Indent = 0) override;
+  llvm::StringRef getStrRep() override;
+  void codeGen() override;
 };
 
 // Expressions
@@ -179,7 +194,8 @@ public:
   LERVarExpression(std::string VarName) : VarName(VarName) {}
   void addSubscript(std::string SS) { Subscripts.push_back(SS); }
   inline size_t getSubscriptCount() const { return Subscripts.size(); }
-  void print(uint8_t Indent = 0) override;
+  llvm::StringRef getStrRep() override;
+  Value codeGen() override;
 };
 
 class LERArrayAccessExpression : public LERExpression {
@@ -192,7 +208,8 @@ public:
   void addIndex(std::unique_ptr<LERExpression> Index) {
     Indicies.push_back(std::move(Index));
   }
-  void print(uint8_t Indent = 0) override;
+  llvm::StringRef getStrRep() override;
+  Value codeGen() override;
 };
 
 class LERBinaryOpExpression : public LERExpression {
@@ -205,7 +222,8 @@ public:
                         std::unique_ptr<LERExpression> RHS,
                         LERTokenKind Operator)
       : LHS(std::move(LHS)), RHS(std::move(RHS)), Operator(Operator) {}
-  void print(uint8_t Indent = 0) override;
+  llvm::StringRef getStrRep() override;
+  Value codeGen() override;
 };
 
 class LERConstantExpression : public LERExpression {
@@ -214,7 +232,8 @@ class LERConstantExpression : public LERExpression {
 public:
   LERConstantExpression(int64_t Value) : Value(Value) {}
   int64_t getValue() const { return Value; }
-  void print(uint8_t Indent = 0) override;
+  llvm::StringRef getStrRep() override;
+  mlir::Value codeGen() override;
 };
 
 class LERFunctionCallExpression : public LERExpression {
@@ -227,7 +246,8 @@ public:
   void addParameter(std::unique_ptr<LERExpression> Parameter) {
     Parameters.push_back(std::move(Parameter));
   }
-  void print(uint8_t Indent = 0) override;
+  llvm::StringRef getStrRep() override;
+  Value codeGen() override;
 };
 
 class LERParenExpression : public LERExpression {
@@ -236,11 +256,12 @@ class LERParenExpression : public LERExpression {
 public:
   LERParenExpression(std::unique_ptr<LERExpression> Expression)
       : Expression(std::move(Expression)) {}
-  void print(uint8_t Indent = 0) override;
+  llvm::StringRef getStrRep() override;
+  Value codeGen() override;
 };
 
 // Main tree
-class LERStatement {
+class LERStatement : public LERASTNode {
   llvm::SmallVector<std::unique_ptr<LERLoop>, 16> Loops;
   std::unique_ptr<LERExpression> Expression;
   std::unique_ptr<LERExpression> Result;
@@ -261,6 +282,8 @@ public:
     this->Result = std::move(Result);
   }
   void print();
+  llvm::StringRef getStrRep() override;
+  ModuleOp codeGen();
 };
 
 // PARSING
