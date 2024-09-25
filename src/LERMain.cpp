@@ -13,10 +13,11 @@
 namespace cl = llvm::cl;
 using namespace ler;
 
+// CLI arguments and options
 cl::opt<std::string> InputFilename(cl::Positional, cl::Required,
-                                          cl::desc("<input file>"));
-
+                                   cl::desc("<input file>"));
 static cl::opt<bool> PrintAST("print-ast", cl::init(false));
+static cl::opt<bool> PrintMLIR("print-mlir", cl::init(false));
 
 int main(int argc, char **argv) {
   cl::ParseCommandLineOptions(argc, argv);
@@ -32,6 +33,11 @@ int main(int argc, char **argv) {
 
   if (PrintAST)
     AST.print();
+
+  // Generate MLIR
+  auto LERMLIR = AST.codeGen();
+  if (PrintMLIR)
+    LERMLIR.print(OUTS);
 
   return 0;
 }

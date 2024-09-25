@@ -24,65 +24,50 @@ def LER_Dialect : Dialect {
 class LER_Op<string mnemonic, list<Trait> traits = []> :
     Op<LER_Dialect, mnemonic, traits>;
 
-// LOOP OPERATIONS
-// ~~~~~~~~~~~~~~~
-
-// Base operation for representing a loop in the LER dialect.
-// This operation will derive into these 4 actual loops:
-// 	1. Regular for loop
-// 	2. Summation for loop
-// 	3. Product for loop
-// 	4. While loop
 class LER_LoopOp<string mnemonic, list<Trait> traits = [
     DeclareOpInterfaceMethods<LoopLikeOpInterface>
 ]> :
 	LER_Op<mnemonic, traits> {
-	let regions = (region AnyRegion:$Region);
+	let regions = (region SizedRegion<1>:$Region);
 }
 
-// While loop operation, takes a bit for a condition.
 def LER_WhileLoopOp : LER_LoopOp<"While"> {
-	let arguments = (ins I1:$Condition);
-}
-
-// Base class for 'For Loop' operations.
-class LER_ForLoopOp<string mnemonic> :
-	LER_LoopOp<mnemonic> {
-
-	let arguments = (ins AnySignlessInteger:$LowerBound,
-						 AnySignlessInteger:$UpperBound,
-						 AnySignlessInteger:$Step);
-
-	let builders = [
-    	OpBuilder<(ins "int64_t":$LowerBound, 
-					   "int64_t":$UpperBound,
-	                   CArg<"int64_t", "1">:$Step)>,
+	let arguments = (ins OptionalAttr<StrAttr>:$Condition,
+						 OptionalAttr<StrArrayAttr>:$Subscripts);
+	let builders =  [
+		OpBuilder<(ins CArg<"llvm::StringRef", "\"\"">:$Condition,
+					   CArg<"llvm::ArrayRef<std::string>", "{}">:$Subscripts)>,
 	];
 }
 
-// Actual For Loop Ops
+class LER_ForLoopOp<string mnemonic> :
+	LER_LoopOp<mnemonic> {
+
+	let arguments = (ins AnyAttrOf<[I64Attr, SymbolRefAttr]>:$LowerBound,
+						 AnyAttrOf<[I64Attr, SymbolRefAttr]>:$UpperBound,
+						 SymbolRefAttr:$LoopIdxVar,
+						 DefaultValuedAttr<I64Attr, "1">:$Step);
+
+	let builders = [
+    	OpBuilder<(ins "std::string":$LowerBound, 
+					   "std::string":$UpperBound,
+					   "std::string":$LoopIdxVar), [{
+		auto BoundAttrs = 
+			ler::convertForLoopBoundsToAttrs($_builder, LowerBound, UpperBound);		
+		auto LoopIdxVarAttr = 
+			::mlir::SymbolRefAttr::get($_state.getContext(), LoopIdxVar);		
+		build($_builder, $_state, BoundAttrs.first, BoundAttrs.second, LoopIdxVarAttr);
+		}]>
+	];
+}
+
 def LER_RegularForLoopOp : LER_ForLoopOp<"RegularFor">;
 def LER_SummationForLoopOp : LER_ForLoopOp<"Summation">;
 def LER_ProductionForLoopOp : LER_ForLoopOp<"Production">;
 
-
-// EXPRESSION OPERATIONS
-// ~~~~~~~~~~~~~~~~~~~~~
-/*
-* The LER dialect is interested in maintaining a high level
-* view over the loop nest. Consequently, the core sub expressions
-* of an LER expression that concerns this dialect are:
-* 	1. Constants e.g 1 | 100
-* 	2. Variables e.g a | b
-* 	3. Array accesses e.g x[i,j] | y[i, j ,k]
-* 	4. Function calls e.g sin(x)
-* 	5. A combination of these piece
-*/
-
 def LER_ExpressionOp : LER_Op<"Expression",
 	[ParentOneOf<["RegularForLoopOp", "SummationForLoopOp", "ProductionForLoopOp", "WhileLoopOp"]>]> {
 	let arguments = (ins Variadic<AnyType>:$Operands);
-	let hasVerifier = 1;
 }
 
 class LER_BinaryExpressionOp<string mnemonic, list<Trait> traits =

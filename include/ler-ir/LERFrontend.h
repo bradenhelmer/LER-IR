@@ -119,10 +119,8 @@ class LERLexer {
   bool lexNumber(LERToken *Out);
 
   // 'is' methods
-  static inline bool isWhiteSpace(char c) {
-    return c == ' ' | c == '\t' | c == '\r';
-  }
-  static inline bool isIdentifierChar(char c) {
+  static bool isWhiteSpace(char c) { return c == ' ' | c == '\t' | c == '\r'; }
+  static bool isIdentifierChar(char c) {
     return isdigit(c) || isalpha(c) || c == '_';
   }
 
@@ -180,8 +178,9 @@ public:
   void attachConditionExpression(std::unique_ptr<LERExpression> CE) {
     ConditionExpression = std::move(CE);
   }
-  inline size_t getSubscriptCount() const { return Subscripts.size(); }
+  size_t getSubscriptCount() const { return Subscripts.size(); }
   llvm::StringRef getStrRep() override;
+  llvm::ArrayRef<std::string> getSubscripts() const { return Subscripts; }
   void codeGen() override;
 };
 
@@ -193,7 +192,7 @@ class LERVarExpression : public LERExpression {
 public:
   LERVarExpression(std::string VarName) : VarName(VarName) {}
   void addSubscript(std::string SS) { Subscripts.push_back(SS); }
-  inline size_t getSubscriptCount() const { return Subscripts.size(); }
+  size_t getSubscriptCount() const { return Subscripts.size(); }
   llvm::StringRef getStrRep() override;
   Value codeGen() override;
 };
@@ -299,7 +298,7 @@ class LERParser {
   void advance();
 
   // Matches current token kind, errors out if not.
-  inline void hardMatch(LERTokenKind Kind) const {
+  void hardMatch(LERTokenKind Kind) const {
     if (CurrToken.Kind != Kind) {
       ERRS << "Parsing error! Expected " << TokenNames[Kind] << " token, got "
            << TokenNames[CurrToken.Kind] << "\n";
@@ -309,9 +308,7 @@ class LERParser {
 
   // Matches current token kind. Use when need to match
   // against multiple possible token kinds..
-  inline bool softMatch(LERTokenKind Kind) const {
-    return CurrToken.Kind == Kind;
-  }
+  bool softMatch(LERTokenKind Kind) const { return CurrToken.Kind == Kind; }
 
   // Parsing methods for each non-terminal in LER Grammar.
 public:
