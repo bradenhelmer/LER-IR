@@ -7,8 +7,8 @@ using llvm::StringRef;
 namespace ler {
 
 void LERStatement::print() {
-  OUTS << "LER AST for source: " << LERSource.getBufferStart() << "\n";
-  OUTS << getStrRep();
+  OUTS << "LER AST for source: " << LERSource.getBufferStart() << "\n"
+       << getStrRep() << "\n\n";
 }
 
 StringRef LERStatement::getStrRep() {
@@ -67,7 +67,7 @@ StringRef LERArrayAccessExpression::getStrRep() {
 
 StringRef LERConstantExpression::getStrRep() {
   if (StrRep.empty())
-    StrRep = std::to_string(Value);
+    StrRep = std::to_string(Val);
   return StringRef(StrRep);
 }
 

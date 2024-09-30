@@ -11,6 +11,7 @@ using namespace ler;
 using mlir::Block;
 using mlir::MLIRContext;
 using mlir::OpBuilder;
+using mlir::Operation;
 
 extern llvm::cl::opt<std::string> InputFilename;
 
@@ -24,6 +25,7 @@ static OpBuilder Builder(&Context);
 ModuleOp LERStatement::codeGen() {
   Context.loadDialect<LERDialect>();
   auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);
+  LERModule->setAttr("Source", Builder.getStringAttr(LERSource.getBuffer()));
   Builder.setInsertionPointToStart(LERModule.getBody());
 
   for (const auto &Loop : Loops) {
@@ -42,7 +44,7 @@ void LERWhileLoop::codeGen() {
 }
 
 void LERForLoop::codeGen() {
-  mlir::Operation *ForLoop;
+  Operation *ForLoop;
 
   switch (Kind) {
   case PRODUCT: {

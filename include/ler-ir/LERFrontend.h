@@ -226,13 +226,13 @@ public:
 };
 
 class LERConstantExpression : public LERExpression {
-  int64_t Value;
+  int64_t Val;
 
 public:
-  LERConstantExpression(int64_t Value) : Value(Value) {}
-  int64_t getValue() const { return Value; }
+  LERConstantExpression(int64_t Value) : Val(Value) {}
+  int64_t getValue() const { return Val; }
   llvm::StringRef getStrRep() override;
-  mlir::Value codeGen() override;
+  Value codeGen() override;
 };
 
 class LERFunctionCallExpression : public LERExpression {

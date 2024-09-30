@@ -13,7 +13,10 @@ using llvm::SmallVector;
 using llvm::StringRef;
 using mlir::Attribute;
 using mlir::LogicalResult;
+using mlir::OpBuilder;
+using mlir::OperationState;
 using mlir::Region;
+using mlir::SymbolRefAttr;
 
 void LERDialect::initialize() {
   addOperations<
@@ -24,7 +27,7 @@ void LERDialect::initialize() {
 
 namespace ler {
 static std::pair<Attribute, Attribute>
-convertForLoopBoundsToAttrs(::mlir::OpBuilder &Builder, StringRef LBound,
+convertForLoopBoundsToAttrs(OpBuilder &Builder, StringRef LBound,
                             StringRef UBound) {
   auto I64Type = Builder.getI64Type();
   Attribute LBoundAttr, UBoundAttr;
@@ -32,12 +35,12 @@ convertForLoopBoundsToAttrs(::mlir::OpBuilder &Builder, StringRef LBound,
   if (!LBound.getAsInteger(10, LBNum)) {
     LBoundAttr = Builder.getIntegerAttr(I64Type, LBNum);
   } else {
-    LBoundAttr = mlir::SymbolRefAttr::get(Builder.getContext(), LBound);
+    LBoundAttr = SymbolRefAttr::get(Builder.getContext(), LBound);
   }
   if (!UBound.getAsInteger(10, UBNum)) {
     UBoundAttr = Builder.getIntegerAttr(I64Type, UBNum);
   } else {
-    UBoundAttr = mlir::SymbolRefAttr::get(Builder.getContext(), UBound);
+    UBoundAttr = SymbolRefAttr::get(Builder.getContext(), UBound);
   }
   return std::make_pair(LBoundAttr, UBoundAttr);
 }
@@ -63,17 +66,17 @@ SmallVector<Region *> SummationForLoopOp::getLoopRegions() {
 
 // WhileLoopOp
 SmallVector<Region *> WhileLoopOp::getLoopRegions() { return {&getRegion()}; }
-void WhileLoopOp::build(::mlir::OpBuilder &odsBuilder,
-                        ::mlir::OperationState &odsState, StringRef Condition,
-                        ArrayRef<std::string> Subscripts) {
+void WhileLoopOp::build(OpBuilder &odsBuilder, OperationState &odsState,
+                        StringRef Condition, ArrayRef<std::string> Subscripts) {
   if (!Condition.empty())
     odsState.addAttribute("Condition", odsBuilder.getStringAttr(Condition));
 
-  SmallVector<mlir::Attribute, 16> SubscriptAttrs;
+  SmallVector<Attribute, 16> SubscriptAttrs;
   if (!Subscripts.empty()) {
     for (const auto &SS : Subscripts)
       SubscriptAttrs.push_back(odsBuilder.getStringAttr(SS));
   }
+  odsState.addAttribute("Subscripts", odsBuilder.getArrayAttr(SubscriptAttrs));
   (void)odsState.addRegion();
 }
 

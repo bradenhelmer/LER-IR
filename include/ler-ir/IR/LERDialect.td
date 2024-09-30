@@ -16,11 +16,8 @@ def LER_Dialect : Dialect {
 
 	let cppNamespace = "::ler";
 	
-	// Extended description
-	let description = [{}];
 }
 
-// Base LER operation class.
 class LER_Op<string mnemonic, list<Trait> traits = []> :
     Op<LER_Dialect, mnemonic, traits>;
 
