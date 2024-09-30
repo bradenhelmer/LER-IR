@@ -1,4 +1,4 @@
-// TokenDefs.h
+// LERTokenDefs.h
 // ~~~~~~~~~~~
 // Token macros
 #ifndef LER_TOKEN

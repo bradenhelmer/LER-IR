@@ -1,4 +1,4 @@
-// main.cpp
+// LERMain.cpp
 // ~~~~~~~~
 // Entry into ler-opt tool.
 #include <ler-ir/IR/LERDialect.h>

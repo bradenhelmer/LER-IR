@@ -1,4 +1,4 @@
-// Frontend.cpp
+// LERFrontend.cpp
 // ~~~~~~~~~~~~
 // Token, Lexer, and Parser implementations.
 #include <ler-ir/LERCommonUtils.h>
@@ -9,7 +9,7 @@ namespace ler {
 
 LERLexer::LERLexer(const std::string &InputFilename) {
 
-  auto InputBufferOrErr = llvm::MemoryBuffer::getFile(InputFilename, true);
+  auto InputBufferOrErr = MemoryBuffer::getFile(InputFilename, true);
 
   if (!InputBufferOrErr) {
     ERRS << "There was an error reading '" << InputFilename

@@ -1,4 +1,4 @@
-// CommonUtils.h
+// LERCommonUtils.h
 // ~~~~~~~~~~~~~
 // Common macro definitions and helper functions.
 #ifndef LERIR_COMMON_UTILS_H

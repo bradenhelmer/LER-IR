@@ -8,6 +8,11 @@
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/Value.h>
 
+using llvm::ArrayRef;
+using llvm::MemoryBuffer;
+using llvm::MemoryBufferRef;
+using llvm::SmallVector;
+using llvm::StringRef;
 using mlir::ModuleOp;
 using mlir::Value;
 namespace ler {
@@ -106,7 +111,7 @@ class LERLexer {
   friend class LERParser;
 
   // LER input file.
-  std::unique_ptr<llvm::MemoryBuffer> LERInputBuffer;
+  std::unique_ptr<MemoryBuffer> LERInputBuffer;
 
   // Buffer pointers
   const char *LERBufStart;
@@ -137,7 +142,7 @@ protected:
 
 public:
   void print(uint8_t Indent = 0) { OUTS << getStrRep(); }
-  virtual llvm::StringRef getStrRep() = 0;
+  virtual StringRef getStrRep() = 0;
 };
 
 // Base classes.
@@ -165,12 +170,12 @@ public:
   void setLoopIdxVar(std::string IdxVar) { LoopIdxVar = IdxVar; }
   void setLBound(std::string LB) { LBound = LB; }
   void setUBound(std::string UB) { UBound = UB; }
-  llvm::StringRef getStrRep() override;
+  StringRef getStrRep() override;
   void codeGen() override;
 };
 
 class LERWhileLoop : public LERLoop {
-  llvm::SmallVector<std::string, 16> Subscripts;
+  SmallVector<std::string, 16> Subscripts;
   std::unique_ptr<LERExpression> ConditionExpression = nullptr;
 
 public:
@@ -179,27 +184,27 @@ public:
     ConditionExpression = std::move(CE);
   }
   size_t getSubscriptCount() const { return Subscripts.size(); }
-  llvm::StringRef getStrRep() override;
-  llvm::ArrayRef<std::string> getSubscripts() const { return Subscripts; }
+  StringRef getStrRep() override;
+  ArrayRef<std::string> getSubscripts() const { return Subscripts; }
   void codeGen() override;
 };
 
 // Expressions
 class LERVarExpression : public LERExpression {
   std::string VarName;
-  llvm::SmallVector<std::string, 16> Subscripts;
+  SmallVector<std::string, 16> Subscripts;
 
 public:
   LERVarExpression(std::string VarName) : VarName(VarName) {}
   void addSubscript(std::string SS) { Subscripts.push_back(SS); }
   size_t getSubscriptCount() const { return Subscripts.size(); }
-  llvm::StringRef getStrRep() override;
+  StringRef getStrRep() override;
   Value codeGen() override;
 };
 
 class LERArrayAccessExpression : public LERExpression {
   std::unique_ptr<LERVarExpression> ArrVar;
-  llvm::SmallVector<std::unique_ptr<LERExpression>, 16> Indicies;
+  SmallVector<std::unique_ptr<LERExpression>, 16> Indicies;
 
 public:
   LERArrayAccessExpression(std::unique_ptr<LERVarExpression> ArrVar)
@@ -207,7 +212,7 @@ public:
   void addIndex(std::unique_ptr<LERExpression> Index) {
     Indicies.push_back(std::move(Index));
   }
-  llvm::StringRef getStrRep() override;
+  StringRef getStrRep() override;
   Value codeGen() override;
 };
 
@@ -221,7 +226,7 @@ public:
                         std::unique_ptr<LERExpression> RHS,
                         LERTokenKind Operator)
       : LHS(std::move(LHS)), RHS(std::move(RHS)), Operator(Operator) {}
-  llvm::StringRef getStrRep() override;
+  StringRef getStrRep() override;
   Value codeGen() override;
 };
 
@@ -231,13 +236,13 @@ class LERConstantExpression : public LERExpression {
 public:
   LERConstantExpression(int64_t Value) : Val(Value) {}
   int64_t getValue() const { return Val; }
-  llvm::StringRef getStrRep() override;
+  StringRef getStrRep() override;
   Value codeGen() override;
 };
 
 class LERFunctionCallExpression : public LERExpression {
   std::unique_ptr<LERVarExpression> FuncName;
-  llvm::SmallVector<std::unique_ptr<LERExpression>, 16> Parameters;
+  SmallVector<std::unique_ptr<LERExpression>, 16> Parameters;
 
 public:
   LERFunctionCallExpression(std::unique_ptr<LERVarExpression> FuncName)
@@ -245,7 +250,7 @@ public:
   void addParameter(std::unique_ptr<LERExpression> Parameter) {
     Parameters.push_back(std::move(Parameter));
   }
-  llvm::StringRef getStrRep() override;
+  StringRef getStrRep() override;
   Value codeGen() override;
 };
 
@@ -255,20 +260,20 @@ class LERParenExpression : public LERExpression {
 public:
   LERParenExpression(std::unique_ptr<LERExpression> Expression)
       : Expression(std::move(Expression)) {}
-  llvm::StringRef getStrRep() override;
+  StringRef getStrRep() override;
   Value codeGen() override;
 };
 
 // Main tree
 class LERStatement : public LERASTNode {
-  llvm::SmallVector<std::unique_ptr<LERLoop>, 16> Loops;
+  SmallVector<std::unique_ptr<LERLoop>, 16> Loops;
   std::unique_ptr<LERExpression> Expression;
   std::unique_ptr<LERExpression> Result;
 
-  llvm::MemoryBufferRef LERSource;
+  MemoryBufferRef LERSource;
 
 public:
-  LERStatement(llvm::MemoryBufferRef LERSource) : LERSource(LERSource) {}
+  LERStatement(MemoryBufferRef LERSource) : LERSource(LERSource) {}
 
   void addLoop(std::unique_ptr<LERLoop> Loop) {
     Loops.push_back(std::move(Loop));
@@ -281,7 +286,7 @@ public:
     this->Result = std::move(Result);
   }
   void print();
-  llvm::StringRef getStrRep() override;
+  StringRef getStrRep() override;
   ModuleOp codeGen();
 };
 
@@ -336,7 +341,7 @@ public:
   // Helper method to invoke the Lexer across the entire input.
   void lexAndPrintTokens();
 
-  llvm::MemoryBufferRef getSourceRef() const {
+  MemoryBufferRef getSourceRef() const {
     return Lexer->LERInputBuffer->getMemBufferRef();
   }
 };
