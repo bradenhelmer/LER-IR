@@ -87,7 +87,7 @@ StringRef LERFunctionCallExpression::getStrRep() {
     Stream << FuncName->getStrRep().str() << '(';
     auto ParamCount = Parameters.size();
     for (int i = 0; i < ParamCount; ++i) {
-      Parameters[i]->print();
+      Stream << Parameters[i]->getStrRep().str();
       if (i < ParamCount - 1)
         Stream << ',';
     }
