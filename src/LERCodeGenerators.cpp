@@ -12,6 +12,8 @@ using mlir::Block;
 using mlir::MLIRContext;
 using mlir::OpBuilder;
 using mlir::Operation;
+using mlir::SymbolRefAttr;
+using mlir::ValueRange;
 
 extern llvm::cl::opt<std::string> InputFilename;
 
@@ -31,6 +33,9 @@ ModuleOp LERStatement::codeGen() {
   for (const auto &Loop : Loops) {
     Loop->codeGen();
   }
+
+  auto E = Expression->codeGen();
+  Builder.create<ResultOp>(UNKNOWN_LOC, E, Result->codeGen());
 
   return LERModule;
 }
@@ -66,13 +71,68 @@ void LERForLoop::codeGen() {
     return;
   }
   auto *FLBlock = new Block();
+  auto LoopIdxMLIR = FLBlock->addArgument(Builder.getI64Type(), UNKNOWN_LOC);
   ForLoop->getRegion(0).push_back(FLBlock);
   Builder.setInsertionPointToStart(FLBlock);
 }
 
-Value LERVarExpression::codeGen() { return nullptr; }
-Value LERArrayAccessExpression::codeGen() { return nullptr; }
-Value LERBinaryOpExpression::codeGen() { return nullptr; }
-Value LERConstantExpression::codeGen() { return nullptr; }
-Value LERFunctionCallExpression::codeGen() { return nullptr; }
-Value LERParenExpression::codeGen() { return nullptr; }
+Value LERVarExpression::codeGen() {
+  auto V = Builder.create<VariableOp>(UNKNOWN_LOC, VarName, Subscripts);
+  return V;
+}
+
+Value LERArrayAccessExpression::codeGen() {
+  SmallVector<Value, 8> IndexVals;
+  for (const auto &Index : Indicies)
+    IndexVals.push_back(Index->codeGen());
+  return Builder.create<ArrayAccessOp>(
+      UNKNOWN_LOC, Builder.getI64Type(),
+      SymbolRefAttr::get(Builder.getStringAttr(ArrVar->getStrRep())),
+      IndexVals);
+}
+
+Value LERBinaryOpExpression::codeGen() {
+  auto L = LHS->codeGen();
+  auto R = RHS->codeGen();
+  Value BinOP;
+  switch (Operator) {
+  case ADD:
+    BinOP = Builder.create<AddOp>(UNKNOWN_LOC, L, R);
+    break;
+  case SUB:
+    BinOP = Builder.create<SubOp>(UNKNOWN_LOC, L, R);
+    break;
+  case MUL:
+    BinOP = Builder.create<MulOp>(UNKNOWN_LOC, L, R);
+    break;
+  case DIV:
+    BinOP = Builder.create<DivOp>(UNKNOWN_LOC, L, R);
+    break;
+  default:
+    break;
+  }
+
+  return BinOP;
+}
+
+Value LERConstantExpression::codeGen() {
+  auto C = Builder.create<ConstantOp>(UNKNOWN_LOC, Val);
+  return C;
+}
+
+Value LERFunctionCallExpression::codeGen() {
+  SmallVector<Value, 16> ParameterValues;
+  for (const auto &Param : Parameters)
+    ParameterValues.push_back(Param->codeGen());
+  auto FC = Builder.create<FunctionCallOp>(
+      UNKNOWN_LOC, Builder.getI64Type(),
+      SymbolRefAttr::get(Builder.getStringAttr(FuncName->getStrRep())),
+      ParameterValues);
+  return FC;
+}
+
+Value LERParenExpression::codeGen() {
+  auto P = Builder.create<ParenExprOp>(UNKNOWN_LOC, Builder.getI64Type(),
+                                       Expression->codeGen());
+  return P;
+}

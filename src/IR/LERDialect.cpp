@@ -26,19 +26,19 @@ void LERDialect::initialize() {
 }
 
 namespace ler {
-static std::pair<Attribute, Attribute>
-convertForLoopBoundsToAttrs(OpBuilder &Builder, StringRef LBound,
-                            StringRef UBound) {
-  auto I64Type = Builder.getI64Type();
+using LoopBoundPair = std::pair<Attribute, Attribute>;
+static LoopBoundPair convertForLoopBoundsToAttrs(OpBuilder &Builder,
+                                                 StringRef LBound,
+                                                 StringRef UBound) {
   Attribute LBoundAttr, UBoundAttr;
   uint64_t LBNum, UBNum;
   if (!LBound.getAsInteger(10, LBNum)) {
-    LBoundAttr = Builder.getIntegerAttr(I64Type, LBNum);
+    LBoundAttr = Builder.getI64IntegerAttr(LBNum);
   } else {
     LBoundAttr = SymbolRefAttr::get(Builder.getContext(), LBound);
   }
   if (!UBound.getAsInteger(10, UBNum)) {
-    UBoundAttr = Builder.getIntegerAttr(I64Type, UBNum);
+    UBoundAttr = Builder.getI64IntegerAttr(UBNum);
   } else {
     UBoundAttr = SymbolRefAttr::get(Builder.getContext(), UBound);
   }
@@ -75,9 +75,28 @@ void WhileLoopOp::build(OpBuilder &odsBuilder, OperationState &odsState,
   if (!Subscripts.empty()) {
     for (const auto &SS : Subscripts)
       SubscriptAttrs.push_back(odsBuilder.getStringAttr(SS));
+    odsState.addAttribute("Subscripts",
+                          odsBuilder.getArrayAttr(SubscriptAttrs));
   }
-  odsState.addAttribute("Subscripts", odsBuilder.getArrayAttr(SubscriptAttrs));
   (void)odsState.addRegion();
+}
+
+// VariableOp
+void VariableOp::build(::mlir::OpBuilder &odsBuilder,
+                       ::mlir::OperationState &odsState, std::string Name,
+                       llvm::ArrayRef<std::string> Subscripts) {
+  odsState.addAttribute("Name",
+                        SymbolRefAttr::get(odsBuilder.getStringAttr(Name)));
+
+  SmallVector<Attribute, 16> SubscriptAttrs;
+  if (!Subscripts.empty()) {
+    for (const auto &SS : Subscripts)
+      SubscriptAttrs.push_back(odsBuilder.getStringAttr(SS));
+    odsState.addAttribute("Subscripts",
+                          odsBuilder.getArrayAttr(SubscriptAttrs));
+  }
+
+  odsState.addTypes({odsBuilder.getI64Type()});
 }
 
 /*LogicalResult ExpressionOp::verify() {}*/

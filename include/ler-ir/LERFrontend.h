@@ -199,6 +199,7 @@ public:
   void addSubscript(std::string SS) { Subscripts.push_back(SS); }
   size_t getSubscriptCount() const { return Subscripts.size(); }
   StringRef getStrRep() override;
+  StringRef getVarName() const { return VarName; }
   Value codeGen() override;
 };
 
