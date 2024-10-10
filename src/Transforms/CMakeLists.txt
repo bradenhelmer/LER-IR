@@ -1,11 +1,12 @@
 add_mlir_dialect_library(
-  LERIR
-  LERDialect.cpp
+  LERTransforms
+  InjectInductionVars.cpp
   DEPENDS
-  LERIRTableGen
+  LERTransformsTableGen
   LINK_LIBS
   PUBLIC
   MLIRIR
+  MLIRPass
   ADDITIONAL_HEADERS
   ${PROJECT_SOURCE_DIR}/include
   ${PROJECT_BINARY_DIR}/include

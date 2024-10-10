@@ -35,19 +35,13 @@ include_directories(${MLIR_INCLUDE_DIRS})
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 
 # Dependent libs
-set(LER_LIBS ${LLVM_LIBS} ${dialect_libs} LERIR)
+set(LER_LIBS ${LLVM_LIBS} ${dialect_libs} LERIR LERTransforms)
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 
 # Executable
 add_executable(ler-opt ${SRC})
 add_dependencies(ler-opt LERIR)
 target_link_libraries(ler-opt ${LER_LIBS})
-
-# Misc Targets
-add_custom_target(
-  gen-tests
-  COMMAND ler-opt -gen-tests="${CMAKE_SOURCE_DIR}"
-  DEPENDS ler-opt)
 
 add_subdirectory(docs)
 add_subdirectory(include)
