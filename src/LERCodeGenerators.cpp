@@ -27,7 +27,7 @@ static OpBuilder Builder(&Context);
 ModuleOp LERStatement::codeGen() {
   Context.loadDialect<LERDialect>();
   auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);
-  LERModule->setAttr("Source",
+  LERModule->setAttr("ler.Source",
                      Builder.getStringAttr(LERSource.getBuffer()));
   Builder.setInsertionPointToStart(LERModule.getBody());
 
