@@ -2,16 +2,19 @@
 // ~~~~~~~~
 // Entry into ler-opt tool.
 #include <ler-ir/IR/LERDialect.h>
-#include <ler-ir/LERCommonUtils.h>
 #include <ler-ir/LERFrontend.h>
+#include <ler-ir/LERUtils.h>
+#include <ler-ir/Transforms/Passes.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/InitLLVM.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <llvm/Support/raw_ostream.h>
 #include <mlir/IR/Builders.h>
+#include <mlir/Pass/PassManager.h>
 
 namespace cl = llvm::cl;
 using namespace ler;
+using mlir::PassManager;
 
 // CLI arguments and options
 cl::opt<std::string> InputFilename(cl::Positional, cl::Required,
@@ -36,6 +39,14 @@ int main(int argc, char **argv) {
 
   // Generate MLIR
   auto LERMLIR = AST.codeGen();
+
+  // Lower to LLVM Dialect
+  PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());
+  PM.addPass(createInjectInductionVars());
+  if (failed(PM.run(LERMLIR))) {
+    LERMLIR.emitError("Pass error!");
+  }
+
   if (PrintMLIR)
     LERMLIR.print(OUTS);
 

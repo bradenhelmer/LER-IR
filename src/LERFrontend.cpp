@@ -1,8 +1,8 @@
 // LERFrontend.cpp
 // ~~~~~~~~~~~~
 // Token, Lexer, and Parser implementations.
-#include <ler-ir/LERCommonUtils.h>
 #include <ler-ir/LERFrontend.h>
+#include <ler-ir/LERUtils.h>
 #include <string>
 
 namespace ler {

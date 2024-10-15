@@ -1,9 +1,18 @@
-// LERCommonUtils.h
-// ~~~~~~~~~~~~~
-// Common macro definitions and helper functions.
+// LERIR.h
+// ~~~~~~~
+// Commons
 #ifndef LERIR_COMMON_UTILS_H
 #define LERIR_COMMON_UTILS_H
+#include <ler-ir/IR/LERDialect.h>
+#include <llvm/Support/Casting.h>
 #include <llvm/Support/raw_ostream.h>
+#include <mlir/IR/MLIRContext.h>
+
+using llvm::isa;
+using mlir::MLIRContext;
+using mlir::Operation;
+
+namespace ler {
 
 #define OUTS llvm::outs()
 #define ERRS llvm::errs()
@@ -25,5 +34,12 @@
     }                                                                          \
     OUTS << ")";                                                               \
   }
+
+static inline bool isForLoopOp(Operation *Op) {
+  return isa<ProductionForLoopOp>(*Op) || isa<RegularForLoopOp>(*Op) ||
+         isa<SummationForLoopOp>(*Op);
+}
+
+} // namespace ler
 
 #endif

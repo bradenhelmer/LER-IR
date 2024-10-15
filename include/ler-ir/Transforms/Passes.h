@@ -4,6 +4,7 @@
 #ifndef LER_TRANSFORM_PASSES_H
 #define LER_TRANSFORM_PASSES_H
 
+#include <mlir/IR/BuiltinOps.h>
 #include <mlir/Pass/Pass.h>
 
 namespace ler {

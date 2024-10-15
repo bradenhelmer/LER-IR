@@ -27,7 +27,8 @@ static OpBuilder Builder(&Context);
 ModuleOp LERStatement::codeGen() {
   Context.loadDialect<LERDialect>();
   auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);
-  LERModule->setAttr("Source", Builder.getStringAttr(LERSource.getBuffer()));
+  LERModule->setAttr("lerler..Source",
+                     Builder.getStringAttr(LERSource.getBuffer()));
   Builder.setInsertionPointToStart(LERModule.getBody());
 
   for (const auto &Loop : Loops) {
@@ -70,10 +71,9 @@ void LERForLoop::codeGen() {
   default:
     return;
   }
-  auto *FLBlock = new Block();
-  auto LoopIdxMLIR = FLBlock->addArgument(Builder.getI64Type(), UNKNOWN_LOC);
-  ForLoop->getRegion(0).push_back(FLBlock);
-  Builder.setInsertionPointToStart(FLBlock);
+  auto &FLBlock = ForLoop->getRegion(0).emplaceBlock();
+  FLBlock.addArgument(Builder.getI64Type(), ForLoop->getLoc());
+  Builder.setInsertionPointToStart(&FLBlock);
 }
 
 Value LERVarExpression::codeGen() {

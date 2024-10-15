@@ -23,10 +23,12 @@ class LER_Op<string mnemonic, list<Trait> traits = []>
     : Op<LER_Dialect, mnemonic, traits>;
 
 class LER_LoopOp<string mnemonic, list<Trait> traits = []>
-    : LER_Op<mnemonic,
-             !listconcat(
-                 [SymbolTable, DeclareOpInterfaceMethods<LoopLikeOpInterface>],
-                 traits)> {
+    : LER_Op<mnemonic, !listconcat(
+                           [
+                             Terminator, SymbolTable,
+                             DeclareOpInterfaceMethods<LoopLikeOpInterface>
+                           ],
+                           traits)> {
   let regions = (region SizedRegion<1> : $Region);
 }
 
@@ -63,18 +65,10 @@ def LER_RegularForLoopOp : LER_ForLoopOp<"RegularFor">;
 def LER_SummationForLoopOp : LER_ForLoopOp<"Summation">;
 def LER_ProductionForLoopOp : LER_ForLoopOp<"Production">;
 
-def LER_ExpressionOp : LER_Op<"Expression",
-	[ParentOneOf<["RegularForLoopOp", "SummationForLoopOp", "ProductionForLoopOp", "WhileLoopOp"]>]> {
-	let arguments = (ins Variadic<AnyType>:$Operands);
-}
-
-
 class LER_SubExpressionOp<string mnemonic, list<Trait> traits =
-	[ParentOneOf<["ExpressionOp"]>]>
-	: LER_Op<mnemonic, traits>;
+	[]>: LER_Op<mnemonic, traits>;
 
-class LER_BinaryExpressionOp<string mnemonic, list<Trait> traits =
-	[HasParent<"ExpressionOp">]>
+class LER_BinaryExpressionOp<string mnemonic, list<Trait> traits =[] >
 	: LER_SubExpressionOp<mnemonic, traits> {
 	let arguments = (ins AnyType:$LHS, AnyType:$RHS);
 	let results = (outs I64:$Result);
@@ -101,12 +95,17 @@ def LER_ConstantOp : LER_SubExpressionOp<"Constant", [Pure]> {
 	];
 }
 
-def LER_VariableOp: LER_SubExpressionOp<"Variable", [Symbol]> {
+def LER_VariableOp: LER_SubExpressionOp<"Variable"> {
 	let arguments = (ins SymbolRefAttr:$Name, OptionalAttr<StrArrayAttr>:$Subscripts);
 	let results = (outs I64:$Result);
 	let builders = [
 		OpBuilder<(ins "std::string":$Name, "llvm::ArrayRef<std::string>":$Subscripts)>
 	];
+	let extraClassDeclaration = [{
+		::llvm::StringRef getNameAsStrRef() {
+			return getNameAttr().getLeafReference().getValue();
+		}
+	}];
 }
 
 def LER_ArrayAccessOp : LER_SubExpressionOp<"ArrayAccess"> {
@@ -124,7 +123,7 @@ def LER_ParenExprOp : LER_SubExpressionOp<"ParenExpr"> {
   let results = (outs I64 : $Result);
 }
 
-def LER_ResultOp : LER_Op<"Result"> {
+def LER_ResultOp : LER_Op<"Result", [Terminator]> {
   let arguments = (ins AnyType : $Expression, AnyType : $Location);
 }
 

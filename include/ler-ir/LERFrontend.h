@@ -3,7 +3,7 @@
 // Token, Lexer, and Parser definitions.
 #ifndef LERIR_FRONTEND_H
 #define LERIR_FRONTEND_H
-#include <ler-ir/LERCommonUtils.h>
+#include <ler-ir/LERUtils.h>
 #include <llvm/Support/MemoryBuffer.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/IR/Value.h>
