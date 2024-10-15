@@ -1,1 +1,15 @@
-#
+add_mlir_dialect_library(
+  LERConversions
+  ConvertArrayAccToMemref.cpp
+  ConvertForLoopsToAffine.cpp
+  ConvertWhileLoopsToSCF.cpp
+  DEPENDS
+  LERConversionsTableGen
+  LINK_LIBS
+  PUBLIC
+  MLIRIR
+  MLIRPass
+  ADDITIONAL_HEADERS
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_BINARY_DIR}/include
+)

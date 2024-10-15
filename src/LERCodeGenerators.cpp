@@ -5,6 +5,7 @@
 #include <ler-ir/IR/LERDialect.h>
 #include <ler-ir/LERFrontend.h>
 #include <llvm/Support/CommandLine.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/Builders.h>
 
 using namespace ler;
@@ -14,6 +15,9 @@ using mlir::OpBuilder;
 using mlir::Operation;
 using mlir::SymbolRefAttr;
 using mlir::ValueRange;
+
+using mlir::func::FuncDialect;
+using mlir::func::FuncOp;
 
 extern llvm::cl::opt<std::string> InputFilename;
 
@@ -25,11 +29,16 @@ static OpBuilder Builder(&Context);
 #define UNKNOWN_LOC Builder.getUnknownLoc()
 
 ModuleOp LERStatement::codeGen() {
-  Context.loadDialect<LERDialect>();
+  Context.loadDialect<LERDialect, FuncDialect>();
   auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);
   LERModule->setAttr("ler.Source",
                      Builder.getStringAttr(LERSource.getBuffer()));
   Builder.setInsertionPointToStart(LERModule.getBody());
+
+  auto MainFunc =
+      FuncOp::create(UNKNOWN_LOC, "main", Builder.getFunctionType({}, {}));
+  LERModule.push_back(MainFunc);
+  Builder.setInsertionPointToStart(MainFunc.addEntryBlock());
 
   for (const auto &Loop : Loops) {
     Loop->codeGen();
