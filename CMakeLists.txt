@@ -35,12 +35,12 @@ include_directories(${MLIR_INCLUDE_DIRS})
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 
 # Dependent libs
-set(LER_LIBS ${LLVM_LIBS} ${dialect_libs} LERIR LERTransforms)
+set(LER_LIBS ${LLVM_LIBS} ${dialect_libs} LERAnalysis LERIR LERTransforms LERConversions)
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 
 # Executable
 add_executable(ler-opt ${SRC})
-add_dependencies(ler-opt LERIR)
+add_dependencies(ler-opt LERAnalysis LERIR)
 target_link_libraries(ler-opt ${LER_LIBS})
 
 add_subdirectory(docs)

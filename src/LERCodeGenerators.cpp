@@ -2,6 +2,7 @@
 // ~~~~~~~~~~~~~~~~~~~~~
 // Virtual method 'codeGen' implementations for lowering the LER AST into the
 // LER MLIR dialect.
+#include <ler-ir/Analysis/Misc.h>
 #include <ler-ir/IR/LERDialect.h>
 #include <ler-ir/LERFrontend.h>
 #include <llvm/Support/CommandLine.h>
@@ -81,7 +82,10 @@ void LERForLoop::codeGen() {
     return;
   }
   auto &FLBlock = ForLoop->getRegion(0).emplaceBlock();
-  FLBlock.addArgument(Builder.getI64Type(), ForLoop->getLoc());
+
+  auto BlkArg = FLBlock.addArgument(Builder.getI64Type(), ForLoop->getLoc());
+  insertIdxBlkArgMap(LoopIdxVar, BlkArg);
+
   Builder.setInsertionPointToStart(&FLBlock);
 }
 

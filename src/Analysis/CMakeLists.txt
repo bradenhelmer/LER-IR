@@ -1,0 +1,10 @@
+add_mlir_dialect_library(
+  LERAnalysis
+  Misc.cpp
+  LINK_LIBS
+  PUBLIC
+  MLIRIR
+  ADDITIONAL_HEADERS
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_BINARY_DIR}/include
+)

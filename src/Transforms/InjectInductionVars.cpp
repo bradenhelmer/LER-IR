@@ -1,7 +1,7 @@
 // InjectInductionVars.cpp
 // ~~~~~~~~~~~~~~~~~~~~~~~
 // InjectInductionVars pass implementation.
-
+#include <ler-ir/Analysis/Misc.h>
 #include <ler-ir/LERUtils.h>
 #include <ler-ir/Transforms/Passes.h>
 #include <llvm/ADT/DenseMap.h>
@@ -28,27 +28,18 @@ struct InjectInductionVarsPass
     : public ler::impl::InjectInductionVarsBase<InjectInductionVarsPass> {
   using InjectInductionVarsBase::InjectInductionVarsBase;
   void runOnOperation() override {
-    SmallDenseMap<StringRef, BlockArgument> IdxToBlkArgMap;
     SmallVector<VariableOp, 32> ToBeErased;
 
-    getOperation().walk<WalkOrder::PreOrder>([&](Operation *Op) {
-      BlockArgument BlkArg;
-      if (isForLoopOp(Op)) {
-        auto IdxVarAttr = dyn_cast<StringAttr>(Op->getAttr("LoopIdxVar"));
-        BlkArg = Op->getRegion(0).getArgument(0);
-        IdxToBlkArgMap[IdxVarAttr.getValue()] = BlkArg;
-      }
+    (void)getOperation().walk([&](Operation *Op) {
       if (auto VarOp = dyn_cast<VariableOp>(Op)) {
-        BlkArg = IdxToBlkArgMap.lookup(VarOp.getNameAsStrRef());
-        if (BlkArg) {
+        if (getBlkArgFromVarName(VarOp.getNameAsStrRef()))
           ToBeErased.push_back(VarOp);
-        }
       }
       return WalkResult::advance();
     });
 
     for (auto &E : ToBeErased) {
-      auto BlkArg = IdxToBlkArgMap[E.getNameAsStrRef()];
+      auto BlkArg = getBlkArgFromVarName(E.getNameAsStrRef());
       E.replaceAllUsesWith(BlkArg);
       E.erase();
     }
