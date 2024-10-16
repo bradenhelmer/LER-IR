@@ -28,21 +28,16 @@ struct InjectInductionVarsPass
     : public ler::impl::InjectInductionVarsBase<InjectInductionVarsPass> {
   using InjectInductionVarsBase::InjectInductionVarsBase;
   void runOnOperation() override {
-    SmallVector<VariableOp, 32> ToBeErased;
-
     (void)getOperation().walk([&](Operation *Op) {
+      BlockArgument BlkArg;
       if (auto VarOp = dyn_cast<VariableOp>(Op)) {
-        if (getBlkArgFromVarName(VarOp.getNameAsStrRef()))
-          ToBeErased.push_back(VarOp);
+        if ((BlkArg = getBlkArgFromVarName(VarOp.getNameAsStrRef()))) {
+          VarOp.replaceAllUsesWith(BlkArg);
+          VarOp.erase();
+        }
       }
       return WalkResult::advance();
     });
-
-    for (auto &E : ToBeErased) {
-      auto BlkArg = getBlkArgFromVarName(E.getNameAsStrRef());
-      E.replaceAllUsesWith(BlkArg);
-      E.erase();
-    }
   }
 };
 
