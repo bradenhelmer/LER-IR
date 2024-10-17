@@ -3,7 +3,7 @@
 // InjectInductionVars pass implementation.
 #include <ler-ir/Analysis/Misc.h>
 #include <ler-ir/LERUtils.h>
-#include <ler-ir/Transforms/Passes.h>
+#include <ler-ir/Passes.h>
 #include <llvm/ADT/DenseMap.h>
 
 using llvm::dyn_cast;
@@ -19,7 +19,7 @@ using namespace ler;
 
 namespace ler {
 #define GEN_PASS_DEF_INJECTINDUCTIONVARS
-#include <ler-ir/Transforms/Passes.h.inc>
+#include <ler-ir/Passes.h.inc>
 } // namespace ler
 
 namespace {

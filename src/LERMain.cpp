@@ -4,7 +4,7 @@
 #include <ler-ir/IR/LERDialect.h>
 #include <ler-ir/LERFrontend.h>
 #include <ler-ir/LERUtils.h>
-#include <ler-ir/Transforms/Passes.h>
+#include <ler-ir/Passes.h>
 #include <llvm/Support/CommandLine.h>
 #include <llvm/Support/InitLLVM.h>
 #include <llvm/Support/MemoryBuffer.h>
@@ -43,6 +43,7 @@ int main(int argc, char **argv) {
   // Lower to LLVM Dialect
   PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());
   PM.addPass(createInjectInductionVars());
+  PM.addPass(createConvertToArith());
   if (failed(PM.run(LERMLIR))) {
     LERMLIR.emitError("Pass error!");
   }

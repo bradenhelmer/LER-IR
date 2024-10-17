@@ -3,8 +3,9 @@ add_mlir_dialect_library(
   ConvertArrayAccToMemref.cpp
   ConvertForLoopsToAffine.cpp
   ConvertWhileLoopsToSCF.cpp
+  ConvertToArith.cpp
   DEPENDS
-  LERConversionsTableGen
+  LERPassesIncTableGen
   LINK_LIBS
   PUBLIC
   MLIRIR

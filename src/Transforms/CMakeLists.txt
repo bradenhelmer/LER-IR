@@ -2,7 +2,7 @@ add_mlir_dialect_library(
   LERTransforms
   InjectInductionVars.cpp
   DEPENDS
-  LERTransformsTableGen
+  LERPassesIncTableGen
   LINK_LIBS
   PUBLIC
   MLIRIR

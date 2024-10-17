@@ -2,14 +2,13 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ConvertArrayAccToMemref pass implementation.
 
-#include <ler-ir/Conversion/Passes.h>
+#include <ler-ir/Passes.h>
 
-using mlir::Operation;
 using namespace ler;
 
 namespace ler {
 #define GEN_PASS_DEF_CONVERTARRAYACCTOMEMREF
-#include <ler-ir/Conversion/Passes.h.inc>
+#include <ler-ir/Passes.h.inc>
 } // namespace ler
 
 namespace {
