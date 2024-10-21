@@ -7,11 +7,24 @@
 #include <ler-ir/IR/LERDialect.h>
 #include <mlir/Dialect/Affine/IR/AffineOps.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
+#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/Dialect/MemRef/IR/MemRef.h>
 #include <mlir/Dialect/SCF/IR/SCF.h>
+#include <mlir/IR/BuiltinDialect.h>
 #include <mlir/IR/BuiltinOps.h>
 #include <mlir/Pass/Pass.h>
 #include <mlir/Transforms/DialectConversion.h>
+
+using mlir::BuiltinDialect;
+using mlir::ConversionPatternRewriter;
+using mlir::ConversionTarget;
+using mlir::LogicalResult;
+using mlir::OpConversionPattern;
+using mlir::RewritePatternSet;
+using mlir::success;
+using mlir::arith::ArithDialect;
+using mlir::func::FuncDialect;
+using mlir::memref::MemRefDialect;
 
 namespace ler {
 

@@ -6,7 +6,7 @@
 using llvm::SmallDenseMap;
 
 namespace {
-SmallDenseMap<StringRef, BlockArgument> IdxToBlkArgMap;
+static SmallDenseMap<StringRef, BlockArgument> IdxToBlkArgMap;
 } // namespace
 
 namespace ler {

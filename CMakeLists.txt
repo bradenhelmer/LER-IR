@@ -1,8 +1,9 @@
 # Project Specific Information
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.22)
 project(LER-IR LANGUAGES CXX C)
 
 # Misc CXX/CMake options.
+set(CMAKE_COLOR_DIAGNOSTICS ON)
 set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
