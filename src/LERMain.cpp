@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
   PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());
   PM.addPass(createInjectInductionVars());
   PM.addPass(createConvertToArith());
+  PM.addPass(createConvertArrayAccToMemref());
   if (failed(PM.run(LERMLIR))) {
     LERMLIR.emitError("Pass error!");
   }

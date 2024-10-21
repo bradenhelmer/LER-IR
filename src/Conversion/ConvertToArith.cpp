@@ -3,20 +3,10 @@
 // ConvertToArith pass implementation.
 #include <ler-ir/LERUtils.h>
 #include <ler-ir/Passes.h>
-#include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/BuiltinDialect.h>
 
-using mlir::BuiltinDialect;
-using mlir::ConversionPatternRewriter;
-using mlir::ConversionTarget;
-using mlir::LogicalResult;
 using mlir::ModuleOp;
-using mlir::OpConversionPattern;
 using mlir::Operation;
-using mlir::RewritePatternSet;
-using mlir::success;
-using mlir::arith::ArithDialect;
-using mlir::func::FuncDialect;
 using namespace ler;
 
 namespace ler {
@@ -34,10 +24,9 @@ struct BinaryOpLowering : public OpConversionPattern<LERBinOp> {
   matchAndRewrite(LERBinOp Op,
                   typename OpConversionPattern<LERBinOp>::OpAdaptor Adaptor,
                   ConversionPatternRewriter &ReWriter) const override {
-    auto NewBinOp = ReWriter.create<ArithBinOp>(Op.getLoc(), Adaptor.getLHS(),
-                                                Adaptor.getRHS());
-    ReWriter.replaceAllUsesWith(Op, NewBinOp);
-    ReWriter.eraseOp(Op);
+    auto NewBinOp = ReWriter.create<ArithBinOp>(
+        Op.getLoc(), Op.getType(), Adaptor.getLHS(), Adaptor.getRHS());
+    ReWriter.replaceOp(Op, NewBinOp.getResult());
     return success();
   }
 };
@@ -55,8 +44,7 @@ struct ConstantOpLowering : public OpConversionPattern<ConstantOp> {
                   ConversionPatternRewriter &ReWriter) const override {
     auto NewConstantOp = ReWriter.create<mlir::arith::ConstantOp>(
         Op.getLoc(), ReWriter.getI64IntegerAttr(Op.getValueAttr().getInt()));
-    ReWriter.replaceAllUsesWith(Op, NewConstantOp);
-    ReWriter.eraseOp(Op);
+    ReWriter.replaceOp(Op, NewConstantOp.getResult());
     return success();
   }
 };
@@ -75,8 +63,8 @@ public:
   void runOnOperation() override {
     auto &Ctx = getContext();
     ConversionTarget ArithTarget(Ctx);
-    ArithTarget.addLegalDialect<LERDialect, ArithDialect, BuiltinDialect,
-                                FuncDialect>();
+    ArithTarget.addLegalDialect<ArithDialect, BuiltinDialect, FuncDialect,
+                                LERDialect>();
     ArithTarget.addIllegalOp<AddOp, SubOp, MulOp, DivOp, ConstantOp>();
 
     RewritePatternSet Patterns(&Ctx);
