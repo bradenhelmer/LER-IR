@@ -2,11 +2,12 @@
 // ~~~~~~~~
 // Miscellaneous analysis routine implementations.
 #include <ler-ir/Analysis/Misc.h>
+#include <llvm/ADT/StringMap.h>
 
-using llvm::SmallDenseMap;
+using llvm::StringMap;
 
 namespace {
-static SmallDenseMap<StringRef, BlockArgument> IdxToBlkArgMap;
+static StringMap<BlockArgument> IdxToBlkArgMap;
 } // namespace
 
 namespace ler {
