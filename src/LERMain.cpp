@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
   PM.addPass(createInjectInductionVars());
   PM.addPass(createConvertToArith());
   PM.addPass(createConvertArrayAccToMemref());
+  PM.addPass(createConvertLoopsToAffineSCF());
   if (failed(PM.run(LERMLIR))) {
     LERMLIR.emitError("Pass error!");
   }

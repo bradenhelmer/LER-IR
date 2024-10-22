@@ -1,8 +1,7 @@
 add_mlir_dialect_library(
   LERConversions
   ConvertArrayAccToMemref.cpp
-  ConvertForLoopsToAffine.cpp
-  ConvertWhileLoopsToSCF.cpp
+  ConvertLoopsToAffineSCF.cpp
   ConvertToArith.cpp
   DEPENDS
   LERPassesIncTableGen

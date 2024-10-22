@@ -10,6 +10,8 @@ using llvm::StringRef;
 using mlir::MLIRContext;
 using mlir::ModuleOp;
 using mlir::OpBuilder;
+using mlir::Value;
+using mlir::arith::IndexCastOp;
 using mlir::memref::AllocOp;
 using mlir::memref::LoadOp;
 using namespace ler;
@@ -74,7 +76,16 @@ public:
 
     // Create memref ops.
     auto Alloc = ArrayAllocMap.lookup(ArrName);
-    auto Load = ReWriter.create<LoadOp>(UNKNOWN_LOC, Alloc, Op.getIndicies());
+
+    // Cast existing I64 indicies to Index Type
+    SmallVector<Value> IndexCasts;
+    for (Value I64Index : Op.getIndicies()) {
+      auto Cast = ReWriter.create<IndexCastOp>(
+          Op->getLoc(), ReWriter.getIndexType(), I64Index);
+      IndexCasts.push_back(Cast.getResult());
+    }
+
+    auto Load = ReWriter.create<LoadOp>(UNKNOWN_LOC, Alloc, IndexCasts);
 
     ReWriter.replaceOp(Op, Load.getResult());
 
