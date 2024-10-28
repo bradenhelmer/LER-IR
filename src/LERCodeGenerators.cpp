@@ -83,7 +83,7 @@ void LERForLoop::codeGen() {
   }
   auto &FLBlock = ForLoop->getRegion(0).emplaceBlock();
 
-  auto BlkArg = FLBlock.addArgument(Builder.getI64Type(), ForLoop->getLoc());
+  auto BlkArg = FLBlock.addArgument(Builder.getIndexType(), ForLoop->getLoc());
   insertIdxBlkArgMap(LoopIdxVar, BlkArg);
 
   Builder.setInsertionPointToStart(&FLBlock);

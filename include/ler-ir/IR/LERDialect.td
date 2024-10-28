@@ -109,7 +109,7 @@ def LER_VariableOp: LER_SubExpressionOp<"Variable"> {
 }
 
 def LER_ArrayAccessOp : LER_SubExpressionOp<"ArrayAccess"> {
-  let arguments = (ins SymbolRefAttr : $ArrayName, Variadic<I64> : $Indicies);
+  let arguments = (ins SymbolRefAttr : $ArrayName, Variadic<Index> : $Indicies);
   let results = (outs I64 : $Result);
 }
 

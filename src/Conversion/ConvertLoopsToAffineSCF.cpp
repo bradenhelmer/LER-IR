@@ -1,10 +1,22 @@
 // ConvertLoopsToAffineSCF.cpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // ConvertLoopsToAffineSCF pass implementation.
+#include <ler-ir/Analysis/Misc.h>
 #include <ler-ir/Passes.h>
 
+using llvm::SmallVector;
+using mlir::AffineMap;
+using mlir::AffineMapAttr;
+using mlir::Attribute;
+using mlir::BlockArgument;
+using mlir::IntegerAttr;
+using mlir::SymbolRefAttr;
+using mlir::Value;
 using mlir::affine::AffineDialect;
 using mlir::affine::AffineForOp;
+using mlir::affine::AffineMinOp;
+using mlir::memref::AllocOp;
+using mlir::memref::LoadOp;
 using mlir::scf::SCFDialect;
 using mlir::scf::WhileOp;
 using namespace ler;
@@ -19,14 +31,71 @@ namespace {
 template <typename LERForLoopOp, typename AffineOp = AffineForOp>
 struct ForLoopLowering : public OpConversionPattern<LERForLoopOp> {
   using OpConversionPattern<LERForLoopOp>::OpConversionPattern;
-private:
-	 
 
 public:
   LogicalResult
   matchAndRewrite(LERForLoopOp Op,
                   typename OpConversionPattern<LERForLoopOp>::OpAdaptor Adaptor,
                   ConversionPatternRewriter &ReWriter) const override {
+
+    AffineForOp ForOp;
+    int64_t LB = Op->template getAttrOfType<IntegerAttr>("LowerBound").getInt();
+
+    // First resolve upper bound of for loop.
+    Attribute UBAttr = Op->getAttr("UpperBound");
+
+    if (auto SymRef = dyn_cast<SymbolRefAttr>(UBAttr)) {
+
+      BlockArgument BlkArg = Op->getRegion(0).getArgument(0);
+      auto Uses = BlkArg.getUses();
+
+      unsigned long MaxUB = 1000000;
+
+      for (auto &Use : Uses) {
+        if (LoadOp Load = dyn_cast<LoadOp>(Use.getOwner())) {
+          auto Alloc = dyn_cast<AllocOp>(Load.getMemRef().getDefiningOp());
+          auto Shape = Alloc.getType().getShape();
+          auto Size = Shape[Use.getOperandNumber() - 1];
+          if (Size < MaxUB)
+            MaxUB = Size;
+        }
+      }
+
+      // Get lower bound map
+      auto LBMap = AffineMap::get(0, 0, ReWriter.getAffineConstantExpr(LB));
+      SmallVector<Value, 4> LBOperands;
+
+      // Upperbound maps
+      AffineMap UBMap;
+      SmallVector<Value, 4> UBOperands;
+
+      // Are we referencing another block arg here? If so, we need to create a
+      // AffineMinOp operation to ensure we dont go out of bounds.
+      if ((BlkArg =
+               getBlkArgFromVarName(SymRef.getLeafReference().getValue()))) {
+
+        auto MinMap = AffineMap::get(1, 0,
+                                     {ReWriter.getAffineDimExpr(0),
+                                      ReWriter.getAffineConstantExpr(MaxUB)},
+                                     ReWriter.getContext());
+        auto MinOp = ReWriter.create<AffineMinOp>(UNKNOWN_LOC, MinMap, BlkArg);
+        UBMap = AffineMap::get(0, 1, ReWriter.getAffineSymbolExpr(0));
+        UBOperands = {MinOp->getResult(0)};
+
+      } else {
+        UBMap = AffineMap::get(0, 0, ReWriter.getAffineConstantExpr(MaxUB));
+      }
+
+      ForOp = ReWriter.create<AffineForOp>(UNKNOWN_LOC, LBOperands, LBMap,
+                                           UBOperands, UBMap, 1);
+    } else {
+      ForOp = ReWriter.create<AffineForOp>(
+          UNKNOWN_LOC, dyn_cast<IntegerAttr>(UBAttr).getInt(), LB, 1);
+    }
+
+    // Erase the original operation
+    ReWriter.eraseOp(Op);
+
     return success();
   }
 };

@@ -46,12 +46,16 @@ int main(int argc, char **argv) {
   PM.addPass(createConvertToArith());
   PM.addPass(createConvertArrayAccToMemref());
   PM.addPass(createConvertLoopsToAffineSCF());
+
+  /*PM.addPass(createConvertResultToStore());*/
+
   if (failed(PM.run(LERMLIR))) {
     LERMLIR.emitError("Pass error!");
   }
+  LERMLIR.print(llvm::outs());
 
-  if (PrintMLIR)
-    LERMLIR.print(OUTS);
+  /*if (PrintMLIR)*/
+  /*  LERMLIR.print(OUTS);*/
 
   return 0;
 }

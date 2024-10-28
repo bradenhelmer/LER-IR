@@ -43,8 +43,6 @@ private:
   void createAllocFromArrayAccOp(ArrayAccessOp *Op, OpAdaptor &Adaptor,
                                  ConversionPatternRewriter &ReWriter,
                                  StringRef ArrName) const {
-    unsigned int MaxArrSize = 1000000;
-
     auto IdxCnt = Op->getIndicies().size();
     SmallVector<int64_t> ArrShape = getArrShape(IdxCnt);
 
@@ -77,15 +75,7 @@ public:
     // Create memref ops.
     auto Alloc = ArrayAllocMap.lookup(ArrName);
 
-    // Cast existing I64 indicies to Index Type
-    SmallVector<Value> IndexCasts;
-    for (Value I64Index : Op.getIndicies()) {
-      auto Cast = ReWriter.create<IndexCastOp>(
-          Op->getLoc(), ReWriter.getIndexType(), I64Index);
-      IndexCasts.push_back(Cast.getResult());
-    }
-
-    auto Load = ReWriter.create<LoadOp>(UNKNOWN_LOC, Alloc, IndexCasts);
+    auto Load = ReWriter.create<LoadOp>(UNKNOWN_LOC, Alloc, Op.getIndicies());
 
     ReWriter.replaceOp(Op, Load.getResult());
 

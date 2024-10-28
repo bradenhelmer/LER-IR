@@ -16,11 +16,13 @@
 #include <mlir/Pass/Pass.h>
 #include <mlir/Transforms/DialectConversion.h>
 
+using llvm::dyn_cast;
 using mlir::BuiltinDialect;
 using mlir::ConversionPatternRewriter;
 using mlir::ConversionTarget;
 using mlir::LogicalResult;
 using mlir::OpConversionPattern;
+using mlir::Operation;
 using mlir::RewritePatternSet;
 using mlir::success;
 using mlir::arith::ArithDialect;

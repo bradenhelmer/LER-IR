@@ -23,6 +23,11 @@ def ConvertLoopsToAffineSCF : Pass<"convert-for-to-affine", "mlir::ModuleOp"> {
   let dependentDialects = ["::mlir::affine::AffineDialect", "::mlir::scf::SCFDialect"];
 }
 
+def ConvertResultToStore : Pass<"convert-result-to-store", "mlir::ModuleOp"> {
+  let summary = "Lowers ler.Result operations into memref.stores.";
+  let dependentDialects = ["::mlir::memref::MemRefDialect"];
+}
+
 def ConvertToArith : Pass<"convert-to-arith", "mlir::ModuleOp"> {
   let summary = "Converts existing ler.Variables to arith.Constants and binary "
                 "ops to their respective"
