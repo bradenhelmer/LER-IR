@@ -5,18 +5,25 @@
 #include <ler-ir/Passes.h>
 
 using llvm::SmallVector;
+using llvm::StringMap;
 using mlir::AffineMap;
 using mlir::AffineMapAttr;
 using mlir::Attribute;
+using mlir::Block;
 using mlir::BlockArgument;
 using mlir::IntegerAttr;
+using mlir::OpBuilder;
+using mlir::Region;
+using mlir::StringAttr;
 using mlir::SymbolRefAttr;
 using mlir::Value;
 using mlir::affine::AffineDialect;
 using mlir::affine::AffineForOp;
 using mlir::affine::AffineMinOp;
+using mlir::func::ReturnOp;
 using mlir::memref::AllocOp;
 using mlir::memref::LoadOp;
+using mlir::memref::StoreOp;
 using mlir::scf::SCFDialect;
 using mlir::scf::WhileOp;
 using namespace ler;
@@ -27,6 +34,31 @@ namespace ler {
 } // namespace ler
 
 namespace {
+StringMap<BlockArgument> NewAffineBlkArgs;
+
+BlockArgument getNewAffineBlkArgFromName(StringRef Var) {
+  if (NewAffineBlkArgs.find(Var) != NewAffineBlkArgs.end()) {
+    return NewAffineBlkArgs[Var];
+  }
+  return nullptr;
+}
+
+static void flattenRegion(Region &Region) {
+  if (Region.empty() || Region.hasOneBlock()) {
+    return;
+  }
+
+  auto *NewBlock = new Block();
+
+  for (auto &Blk : llvm::make_early_inc_range(Region.getBlocks())) {
+    NewBlock->getOperations().splice(NewBlock->end(), Blk.getOperations());
+    if (&Blk != NewBlock)
+      Blk.erase();
+  }
+
+  if (Region.empty())
+    Region.push_back(NewBlock);
+}
 
 template <typename LERForLoopOp, typename AffineOp = AffineForOp>
 struct ForLoopLowering : public OpConversionPattern<LERForLoopOp> {
@@ -39,6 +71,7 @@ public:
                   ConversionPatternRewriter &ReWriter) const override {
 
     AffineForOp ForOp;
+    BlockArgument BlkArg;
     int64_t LB = Op->template getAttrOfType<IntegerAttr>("LowerBound").getInt();
 
     // First resolve upper bound of for loop.
@@ -46,7 +79,7 @@ public:
 
     if (auto SymRef = dyn_cast<SymbolRefAttr>(UBAttr)) {
 
-      BlockArgument BlkArg = Op->getRegion(0).getArgument(0);
+      BlkArg = Op->getRegion(0).getArgument(0);
       auto Uses = BlkArg.getUses();
 
       unsigned long MaxUB = 1000000;
@@ -71,8 +104,8 @@ public:
 
       // Are we referencing another block arg here? If so, we need to create a
       // AffineMinOp operation to ensure we dont go out of bounds.
-      if ((BlkArg =
-               getBlkArgFromVarName(SymRef.getLeafReference().getValue()))) {
+      if ((BlkArg = getNewAffineBlkArgFromName(
+               SymRef.getLeafReference().getValue()))) {
 
         auto MinMap = AffineMap::get(1, 0,
                                      {ReWriter.getAffineDimExpr(0),
@@ -93,8 +126,18 @@ public:
           UNKNOWN_LOC, dyn_cast<IntegerAttr>(UBAttr).getInt(), LB, 1);
     }
 
-    // Erase the original operation
-    ReWriter.eraseOp(Op);
+    NewAffineBlkArgs[Op->template getAttrOfType<StringAttr>("LoopIdxVar")
+                         .getValue()] = BlkArg;
+
+    ReWriter.inlineRegionBefore(Op->getRegion(0), ForOp.getRegion(),
+                                ForOp.getRegion().end());
+
+    auto &BB0 = ForOp.getRegion().getBlocks().front();
+    auto &BB1 = ForOp.getRegion().getBlocks().back();
+    BB1.getOperations().splice(BB1.end(), BB0.getOperations());
+    BB0.erase();
+
+    Op->erase();
 
     return success();
   }
@@ -113,6 +156,25 @@ struct WhileLoopOpLowering : public OpConversionPattern<WhileLoopOp> {
   }
 };
 
+struct ResultOpLowering : public OpConversionPattern<ResultOp> {
+  using OpConversionPattern<ResultOp>::OpConversionPattern;
+  LogicalResult
+  matchAndRewrite(ResultOp Op, OpAdaptor Adaptor,
+                  ConversionPatternRewriter &ReWriter) const override {
+    auto Load = dyn_cast<LoadOp>(Op.getLocation().getDefiningOp());
+    auto Ref = Load.getMemRef();
+    auto Indicies = Load.getIndices();
+
+    auto Store = ReWriter.create<StoreOp>(UNKNOWN_LOC, Op.getExpression(), Ref,
+                                          Indicies);
+
+    Op.erase();
+    Load.erase();
+
+    return success();
+  }
+};
+
 struct ConvertLoopsToAffineSCFPass
     : public ler::impl::ConvertLoopsToAffineSCFBase<
           ConvertLoopsToAffineSCFPass> {
@@ -126,13 +188,20 @@ struct ConvertLoopsToAffineSCFPass
                          FuncDialect, LERDialect, MemRefDialect, SCFDialect>();
 
     AffineSCFTarget.addIllegalOp<ProductionForLoopOp, RegularForLoopOp,
-                                 SummationForLoopOp, WhileLoopOp>();
+                                 ResultOp, SummationForLoopOp, WhileLoopOp>();
 
     RewritePatternSet Patterns(&Ctx);
-    Patterns.add<ProductionForLoopOpLowering, SummationForLoopOpLowering,
-                 RegularForLoopOpLowering, WhileLoopOpLowering>(&Ctx);
+    Patterns
+        .add<ProductionForLoopOpLowering, SummationForLoopOpLowering,
+             RegularForLoopOpLowering, ResultOpLowering, WhileLoopOpLowering>(
+            &Ctx);
 
     auto Op = getOperation();
+    OpBuilder Builder(&Ctx);
+    Builder.setInsertionPointToEnd(
+        &Op.lookupSymbol("main")->getRegion(0).front());
+    Builder.create<ReturnOp>(Builder.getUnknownLoc());
+
     if (failed(applyFullConversion(Op, AffineSCFTarget, std::move(Patterns)))) {
       signalPassFailure();
     }

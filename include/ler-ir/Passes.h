@@ -5,6 +5,7 @@
 #define LER_PASSES_H
 
 #include <ler-ir/IR/LERDialect.h>
+#include <ler-ir/LERUtils.h>
 #include <mlir/Dialect/Affine/IR/AffineOps.h>
 #include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>

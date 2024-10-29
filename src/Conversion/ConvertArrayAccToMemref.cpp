@@ -51,7 +51,6 @@ private:
 
     ReWriter.setInsertionPointToStart(
         &Module->lookupSymbol("main")->getRegion(0).front());
-
     auto ArrAlloc = ReWriter.create<AllocOp>(
         UNKNOWN_LOC, mlir::MemRefType::get(ArrShape, ReWriter.getI64Type()));
 

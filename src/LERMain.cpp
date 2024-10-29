@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
 
   // Generate MLIR
   auto LERMLIR = AST.codeGen();
+  LERMLIR.print(OUTS);
 
   // Lower to LLVM Dialect
   PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());
