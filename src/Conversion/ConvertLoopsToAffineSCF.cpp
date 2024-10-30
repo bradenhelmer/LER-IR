@@ -12,6 +12,7 @@ using mlir::Attribute;
 using mlir::Block;
 using mlir::BlockArgument;
 using mlir::IntegerAttr;
+using mlir::ModuleOp;
 using mlir::OpBuilder;
 using mlir::Region;
 using mlir::StringAttr;
@@ -20,6 +21,7 @@ using mlir::Value;
 using mlir::affine::AffineDialect;
 using mlir::affine::AffineForOp;
 using mlir::affine::AffineMinOp;
+using mlir::arith::ConstantIndexOp;
 using mlir::func::ReturnOp;
 using mlir::memref::AllocOp;
 using mlir::memref::LoadOp;
@@ -157,20 +159,62 @@ struct WhileLoopOpLowering : public OpConversionPattern<WhileLoopOp> {
 };
 
 struct ResultOpLowering : public OpConversionPattern<ResultOp> {
-  using OpConversionPattern<ResultOp>::OpConversionPattern;
+private:
+  ModuleOp *Module;
+
+public:
+  ResultOpLowering(MLIRContext *Ctx, ModuleOp *Module)
+      : OpConversionPattern<ResultOp>(Ctx), Module(Module) {};
+
   LogicalResult
   matchAndRewrite(ResultOp Op, OpAdaptor Adaptor,
                   ConversionPatternRewriter &ReWriter) const override {
-    auto Load = dyn_cast<LoadOp>(Op.getLocation().getDefiningOp());
-    auto Ref = Load.getMemRef();
-    auto Indicies = Load.getIndices();
+    if (auto Load = dyn_cast<LoadOp>(Op.getLocation().getDefiningOp())) {
+      auto Ref = Load.getMemRef();
+      auto Indicies = Load.getIndices();
 
-    auto Store = ReWriter.create<StoreOp>(UNKNOWN_LOC, Op.getExpression(), Ref,
-                                          Indicies);
+      auto Store = ReWriter.create<StoreOp>(UNKNOWN_LOC, Op.getExpression(),
+                                            Ref, Indicies);
+      Load.erase();
+    }
 
+    else if (auto Var =
+                 dyn_cast<VariableOp>(Op.getLocation().getDefiningOp())) {
+      ReWriter.setInsertionPointToStart(
+          &Module->lookupSymbol("main")->getRegion(0).front());
+      auto VarAlloc = ReWriter.create<AllocOp>(
+          UNKNOWN_LOC, mlir::MemRefType::get({1}, ReWriter.getI64Type()));
+
+      ReWriter.setInsertionPoint(Op);
+      auto Zeroth = ReWriter.create<ConstantIndexOp>(UNKNOWN_LOC, 0);
+      auto Store = ReWriter.create<StoreOp>(UNKNOWN_LOC, Op.getExpression(),
+                                            VarAlloc, Zeroth.getResult());
+      Var.erase();
+    }
     Op.erase();
-    Load.erase();
+    return success();
+  }
+};
 
+struct VariableOpLowering : public OpConversionPattern<VariableOp> {
+  using OpConversionPattern<VariableOp>::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(VariableOp Op, OpAdaptor Adaptor,
+                  ConversionPatternRewriter &ReWriter) const override {
+    bool UsedInResult = false;
+    auto Uses = Op->getUses();
+    for (const auto &Use : Uses) {
+      auto User = Use.getOwner();
+      if (isa<ResultOp>(User))
+        UsedInResult = true;
+    }
+
+    if (!UsedInResult) {
+      auto Constant = ReWriter.create<mlir::arith::ConstantOp>(
+          Op.getLoc(), ReWriter.getI64IntegerAttr(100));
+      ReWriter.replaceOp(Op, Constant.getResult());
+    }
     return success();
   }
 };
@@ -182,21 +226,24 @@ struct ConvertLoopsToAffineSCFPass
 
   void runOnOperation() override {
     auto &Ctx = getContext();
+    auto Op = getOperation();
+
     ConversionTarget AffineSCFTarget(Ctx);
     AffineSCFTarget
         .addLegalDialect<AffineDialect, ArithDialect, BuiltinDialect,
                          FuncDialect, LERDialect, MemRefDialect, SCFDialect>();
 
-    AffineSCFTarget.addIllegalOp<ProductionForLoopOp, RegularForLoopOp,
-                                 ResultOp, SummationForLoopOp, WhileLoopOp>();
+    AffineSCFTarget
+        .addIllegalOp<ProductionForLoopOp, RegularForLoopOp, ResultOp,
+                      SummationForLoopOp, WhileLoopOp, VariableOp>();
 
     RewritePatternSet Patterns(&Ctx);
     Patterns
         .add<ProductionForLoopOpLowering, SummationForLoopOpLowering,
-             RegularForLoopOpLowering, ResultOpLowering, WhileLoopOpLowering>(
+             RegularForLoopOpLowering, WhileLoopOpLowering, VariableOpLowering>(
             &Ctx);
+    Patterns.add<ResultOpLowering>(&Ctx, &Op);
 
-    auto Op = getOperation();
     OpBuilder Builder(&Ctx);
     Builder.setInsertionPointToEnd(
         &Op.lookupSymbol("main")->getRegion(0).front());

@@ -53,7 +53,9 @@ int main(int argc, char **argv) {
   if (failed(PM.run(LERMLIR))) {
     LERMLIR.emitError("Pass error!");
   }
-  LERMLIR.print(llvm::outs());
+
+  OUTS << "\n";
+  LERMLIR.print(OUTS);
 
   /*if (PrintMLIR)*/
   /*  LERMLIR.print(OUTS);*/

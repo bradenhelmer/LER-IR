@@ -6,6 +6,7 @@
 #include <ler-ir/IR/LERDialect.h>
 #include <ler-ir/LERFrontend.h>
 #include <llvm/Support/CommandLine.h>
+#include <mlir/Dialect/Arith/IR/Arith.h>
 #include <mlir/Dialect/Func/IR/FuncOps.h>
 #include <mlir/IR/Builders.h>
 
@@ -17,6 +18,8 @@ using mlir::Operation;
 using mlir::SymbolRefAttr;
 using mlir::ValueRange;
 
+using mlir::arith::ArithDialect;
+using mlir::arith::IndexCastOp;
 using mlir::func::FuncDialect;
 using mlir::func::FuncOp;
 
@@ -30,7 +33,7 @@ static OpBuilder Builder(&Context);
 #define UNKNOWN_LOC Builder.getUnknownLoc()
 
 ModuleOp LERStatement::codeGen() {
-  Context.loadDialect<LERDialect, FuncDialect>();
+  Context.loadDialect<LERDialect, FuncDialect, ArithDialect>();
   auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);
   LERModule->setAttr("ler.Source",
                      Builder.getStringAttr(LERSource.getBuffer()));
@@ -96,8 +99,17 @@ Value LERVarExpression::codeGen() {
 
 Value LERArrayAccessExpression::codeGen() {
   SmallVector<Value, 8> IndexVals;
-  for (const auto &Index : Indicies)
-    IndexVals.push_back(Index->codeGen());
+  for (const auto &Index : Indicies) {
+    auto IndexVal = Index->codeGen();
+
+    if (isArithOp(IndexVal.getDefiningOp())) {
+      OUTS << "Is arith...\n";
+      IndexVal = Builder.create<IndexCastOp>(IndexVal.getLoc(),
+                                             Builder.getIndexType(), IndexVal);
+    }
+
+    IndexVals.push_back(IndexVal);
+  }
   return Builder.create<ArrayAccessOp>(
       UNKNOWN_LOC, Builder.getI64Type(),
       SymbolRefAttr::get(Builder.getStringAttr(ArrVar->getStrRep())),

@@ -11,7 +11,6 @@ using mlir::MLIRContext;
 using mlir::ModuleOp;
 using mlir::OpBuilder;
 using mlir::Value;
-using mlir::arith::IndexCastOp;
 using mlir::memref::AllocOp;
 using mlir::memref::LoadOp;
 using namespace ler;

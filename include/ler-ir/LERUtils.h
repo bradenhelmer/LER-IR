@@ -40,6 +40,11 @@ static inline bool isForLoopOp(Operation *Op) {
          isa<SummationForLoopOp>(*Op);
 }
 
+static inline bool isArithOp(Operation *Op) {
+  return isa<AddOp>(*Op) || isa<SubOp>(*Op) || isa<MulOp>(*Op) ||
+         isa<DivOp>(*Op);
+}
+
 } // namespace ler
 
 #endif
