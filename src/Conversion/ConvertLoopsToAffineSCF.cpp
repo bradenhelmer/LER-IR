@@ -168,7 +168,6 @@ public:
 
       auto Store = ReWriter.create<StoreOp>(UNKNOWN_LOC, Op.getExpression(),
                                             Ref, Indicies);
-      Load.erase();
     }
 
     else if (auto Var =
@@ -182,8 +181,8 @@ public:
       auto Zeroth = ReWriter.create<ConstantIndexOp>(UNKNOWN_LOC, 0);
       auto Store = ReWriter.create<StoreOp>(UNKNOWN_LOC, Op.getExpression(),
                                             VarAlloc, Zeroth.getResult());
-      Var.erase();
     }
+
     Op.erase();
     return success();
   }
