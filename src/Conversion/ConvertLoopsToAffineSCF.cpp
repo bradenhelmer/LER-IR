@@ -4,27 +4,20 @@
 #include <ler-ir/Analysis/Misc.h>
 #include <ler-ir/Passes.h>
 
-using llvm::SmallVector;
-using llvm::StringMap;
 using mlir::AffineMap;
 using mlir::AffineMapAttr;
 using mlir::Attribute;
 using mlir::Block;
 using mlir::BlockArgument;
 using mlir::IntegerAttr;
-using mlir::ModuleOp;
-using mlir::OpBuilder;
 using mlir::Region;
 using mlir::StringAttr;
 using mlir::SymbolRefAttr;
-using mlir::Value;
 using mlir::affine::AffineDialect;
 using mlir::affine::AffineForOp;
 using mlir::affine::AffineMinOp;
 using mlir::arith::ConstantIndexOp;
 using mlir::func::ReturnOp;
-using mlir::memref::AllocOp;
-using mlir::memref::LoadOp;
 using mlir::memref::StoreOp;
 using mlir::scf::SCFDialect;
 using mlir::scf::WhileOp;

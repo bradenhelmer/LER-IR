@@ -5,8 +5,6 @@
 #include <ler-ir/Passes.h>
 #include <mlir/IR/BuiltinDialect.h>
 
-using mlir::ModuleOp;
-using mlir::Operation;
 using namespace ler;
 
 namespace ler {

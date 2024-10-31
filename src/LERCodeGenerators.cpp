@@ -103,7 +103,6 @@ Value LERArrayAccessExpression::codeGen() {
     auto IndexVal = Index->codeGen();
 
     if (isArithOp(IndexVal.getDefiningOp())) {
-      OUTS << "Is arith...\n";
       IndexVal = Builder.create<IndexCastOp>(IndexVal.getLoc(),
                                              Builder.getIndexType(), IndexVal);
     }

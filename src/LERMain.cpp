@@ -47,8 +47,7 @@ int main(int argc, char **argv) {
   PM.addPass(createConvertToArith());
   PM.addPass(createConvertArrayAccToMemref());
   PM.addPass(createConvertLoopsToAffineSCF());
-
-  /*PM.addPass(createConvertResultToStore());*/
+  PM.addPass(createConvertToLLVM());
 
   if (failed(PM.run(LERMLIR))) {
     LERMLIR.emitError("Pass error!");

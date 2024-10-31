@@ -30,6 +30,11 @@ def ConvertToArith : Pass<"convert-to-arith", "mlir::ModuleOp"> {
   let dependentDialects = ["::mlir::arith::ArithDialect"];
 }
 
+def ConvertToLLVM : Pass<"convert-to-llvm", "mlir::ModuleOp"> {
+	let summary = "Converts all intermediary dialects (affine, arith, memref, scf) to llvm";
+	let dependentDialects = ["::mlir::LLVM::LLVMDialect"];
+}
+
 // TRANSFORMS
 
 def InjectInductionVars : Pass<"inject-induction-vars", "mlir::ModuleOp"> {

@@ -4,15 +4,7 @@
 
 #include <ler-ir/Passes.h>
 
-using llvm::SmallVector;
-using llvm::StringMap;
-using llvm::StringRef;
 using mlir::MLIRContext;
-using mlir::ModuleOp;
-using mlir::OpBuilder;
-using mlir::Value;
-using mlir::memref::AllocOp;
-using mlir::memref::LoadOp;
 using namespace ler;
 
 namespace ler {
