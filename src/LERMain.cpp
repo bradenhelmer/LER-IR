@@ -39,7 +39,6 @@ int main(int argc, char **argv) {
 
   // Generate MLIR
   auto LERMLIR = AST.codeGen();
-  LERMLIR.print(OUTS);
 
   // Lower to LLVM Dialect
   PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());
@@ -53,11 +52,8 @@ int main(int argc, char **argv) {
     LERMLIR.emitError("Pass error!");
   }
 
-  OUTS << "\n";
-  LERMLIR.print(OUTS);
+  moduleToExecutable(LERMLIR, InputFilename);
 
-  /*if (PrintMLIR)*/
-  /*  LERMLIR.print(OUTS);*/
 
   return 0;
 }
