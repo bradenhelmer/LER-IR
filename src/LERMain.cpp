@@ -52,8 +52,10 @@ int main(int argc, char **argv) {
     LERMLIR.emitError("Pass error!");
   }
 
-  moduleToExecutable(LERMLIR, InputFilename);
+  auto RawFileName = InputFilename.substr(InputFilename.find_last_of('/') + 1);
+  auto Prefix = RawFileName.substr(0, RawFileName.find_last_of('.'));
 
+  moduleToExecutable(LERMLIR, Prefix);
 
   return 0;
 }
