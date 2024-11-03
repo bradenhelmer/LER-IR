@@ -22,6 +22,8 @@ cl::opt<std::string> InputFilename(cl::Positional, cl::Required,
 static cl::opt<bool> PrintAST("print-ast", cl::init(false));
 static cl::opt<bool> PrintMLIR("print-mlir", cl::init(false));
 
+static cl::opt<bool> CompileToExe("-exe", cl::init(false));
+
 int main(int argc, char **argv) {
   cl::ParseCommandLineOptions(argc, argv);
   llvm::InitLLVM(argc, argv);
@@ -52,10 +54,12 @@ int main(int argc, char **argv) {
     LERMLIR.emitError("Pass error!");
   }
 
-  auto RawFileName = InputFilename.substr(InputFilename.find_last_of('/') + 1);
-  auto Prefix = RawFileName.substr(0, RawFileName.find_last_of('.'));
-
-  moduleToExecutable(LERMLIR, Prefix);
+  if (CompileToExe) {
+    auto RawFileName =
+        InputFilename.substr(InputFilename.find_last_of('/') + 1);
+    auto Prefix = RawFileName.substr(0, RawFileName.find_last_of('.'));
+    moduleToExecutable(LERMLIR, Prefix);
+  }
 
   return 0;
 }
