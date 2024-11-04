@@ -63,7 +63,7 @@ void moduleToExecutable(ModuleOp Module, StringRef Prefix) {
   system(CmdStr.str().c_str());
 
   // Remove intermediary files.
-  std::filesystem::remove(LLOutFile);
+  /*std::filesystem::remove(LLOutFile);*/
   // std::filesystem::remove(AsmOutFile);
 
   return;
