@@ -181,6 +181,7 @@ public:
       auto Zeroth = ReWriter.create<ConstantIndexOp>(UNKNOWN_LOC, 0);
       auto Store = ReWriter.create<StoreOp>(UNKNOWN_LOC, Op.getExpression(),
                                             VarAlloc, Zeroth.getResult());
+	  Var.erase();
     }
 
     Op.erase();
@@ -198,7 +199,7 @@ struct VariableOpLowering : public OpConversionPattern<VariableOp> {
     auto Uses = Op->getUses();
     for (const auto &Use : Uses) {
       auto User = Use.getOwner();
-      if (isa<ResultOp>(User))
+      if (isa<ResultOp>(User) || isa<StoreOp>(User))
         UsedInResult = true;
     }
 
