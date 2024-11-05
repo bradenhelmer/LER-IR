@@ -12,6 +12,9 @@
 using namespace llvm;
 using namespace mlir;
 
+extern cl::opt<bool> OutputLLVMIR;
+extern cl::opt<bool> OutputAssembly;
+
 namespace {
 static inline bool llcExists() {
   std::string Cmd = "command -v llc > /dev/null 2>&1";
@@ -62,9 +65,11 @@ void moduleToExecutable(ModuleOp Module, StringRef Prefix) {
   // Execute!
   system(CmdStr.str().c_str());
 
-  // Remove intermediary files.
-  /*std::filesystem::remove(LLOutFile);*/
-  // std::filesystem::remove(AsmOutFile);
+  // Remove intermediary files. (Or not if specified)
+  if (!OutputLLVMIR)
+    std::filesystem::remove(LLOutFile);
+  if (!OutputAssembly)
+    std::filesystem::remove(AsmOutFile);
 
   return;
 }
