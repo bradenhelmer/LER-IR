@@ -19,8 +19,10 @@ using mlir::affine::AffineMinOp;
 using mlir::arith::ConstantIndexOp;
 using mlir::func::ReturnOp;
 using mlir::memref::StoreOp;
+using mlir::scf::ConditionOp;
 using mlir::scf::SCFDialect;
 using mlir::scf::WhileOp;
+using mlir::scf::YieldOp;
 using namespace ler;
 
 namespace ler {
@@ -144,9 +146,57 @@ using RegularForLoopOpLowering = ForLoopLowering<RegularForLoopOp>;
 
 struct WhileLoopOpLowering : public OpConversionPattern<WhileLoopOp> {
   using OpConversionPattern::OpConversionPattern;
+
   LogicalResult
   matchAndRewrite(WhileLoopOp Op, OpAdaptor Adaptor,
                   ConversionPatternRewriter &ReWriter) const override {
+
+    // Create iteration bounds.
+    ReWriter.setInsertionPoint(Op);
+    auto StartIterCnst = ReWriter.create<mlir::arith::ConstantOp>(
+        UNKNOWN_LOC, ReWriter.getI64IntegerAttr(0));
+    auto EndIterCnst = ReWriter.create<mlir::arith::ConstantOp>(
+        UNKNOWN_LOC, ReWriter.getI64IntegerAttr(1000));
+
+    // Create while loop
+    auto LoweredWhile = ReWriter.create<WhileOp>(
+        Op.getLoc(), mlir::TypeRange{ReWriter.getI64Type()},
+        mlir::ValueRange{StartIterCnst});
+
+    // Create before block with condition checking operations.
+    Block *Before =
+        ReWriter.createBlock(&LoweredWhile.getBefore(), {},
+                             mlir::TypeRange{StartIterCnst.getType()});
+    ReWriter.setInsertionPointToStart(Before);
+    auto CounterVar = LoweredWhile.getBefore().addArgument(
+        ReWriter.getI64Type(), Op.getLoc());
+    auto CompareOp = ReWriter.create<mlir::arith::CmpIOp>(
+        Op.getLoc(), mlir::arith::CmpIPredicate::slt, CounterVar, EndIterCnst);
+    ReWriter.create<ConditionOp>(Op.getLoc(), CompareOp, CounterVar);
+
+    // Create after block with actual while body
+    ReWriter.createBlock(&LoweredWhile.getAfter(), {},
+                         mlir::TypeRange{StartIterCnst.getType()});
+
+    ReWriter.cloneRegionBefore(Op.getRegion(), &LoweredWhile.getAfter().back());
+    ReWriter.eraseBlock(&LoweredWhile.getAfter().back());
+
+    Block *After = &LoweredWhile.getAfter().front();
+
+    ReWriter.setInsertionPointToEnd(After);
+
+    auto CounterVarA = After->addArgument(ReWriter.getI64Type(), Op.getLoc());
+
+    auto IncCnst = ReWriter.create<mlir::arith::ConstantOp>(
+        Op.getLoc(), ReWriter.getI64IntegerAttr(1));
+
+    auto Next =
+        ReWriter.create<mlir::arith::AddIOp>(Op.getLoc(), CounterVarA, IncCnst);
+
+    ReWriter.create<YieldOp>(Op.getLoc(), mlir::ValueRange{Next});
+
+    ReWriter.replaceOp(Op, LoweredWhile->getResults());
+
     return success();
   }
 };
@@ -181,7 +231,7 @@ public:
       auto Zeroth = ReWriter.create<ConstantIndexOp>(UNKNOWN_LOC, 0);
       auto Store = ReWriter.create<StoreOp>(UNKNOWN_LOC, Op.getExpression(),
                                             VarAlloc, Zeroth.getResult());
-	  Var.erase();
+      Var.erase();
     }
 
     Op.erase();
