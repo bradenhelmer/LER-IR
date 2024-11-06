@@ -48,3 +48,11 @@ add_subdirectory(docs)
 add_subdirectory(include)
 add_subdirectory(src)
 add_subdirectory(test)
+
+add_custom_target(gen-docs
+	COMMAND
+	cp ${CMAKE_BINARY_DIR}/docs/Dialects/* ${CMAKE_SOURCE_DIR}/docs/
+	DEPENDS
+    docs/Dialects/LERDialect.md
+    docs/Dialects/LERPasses.md
+)
