@@ -27,10 +27,10 @@ cmake --build build
 
 An executable named `ler-opt` will be in the `build` directory.
 
-## [USAGE]()
+## [USAGE](./docs/USAGE.md)
 
-## [INTERNALS]()
+## [INTERNALS](./docs/INTERNALS.md)
 
-## [LER DIALECT & OPERATIONS](./docs/LERDialect.md)
+## [LER DIALECT & OPERATIONS](./docs/LERDialect.md) (MLIR Auto Generated)
 
-## [LER PASSES](./docs/LERPasses.md)
+## [LER PASSES](./docs/LERPasses.md) (MLIR Auto Generated)
