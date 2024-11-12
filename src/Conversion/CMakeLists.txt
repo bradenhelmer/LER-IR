@@ -5,6 +5,7 @@ add_mlir_dialect_library(
   ConvertArrayAccToMemref.cpp
   ConvertToLLVM.cpp
   DEPENDS
+  LERIR
   LERPassesIncTableGen
   LINK_LIBS
   PUBLIC

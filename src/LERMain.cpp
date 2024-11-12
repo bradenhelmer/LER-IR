@@ -21,18 +21,31 @@ cl::opt<std::string> InputFilename(cl::Positional, cl::Required,
                                    cl::desc("<input file>"));
 
 // Printing to stdout options
-static cl::opt<bool> PrintAST("print-ast", cl::init(false));
-static cl::opt<bool> PrintLERMLIR("print-ler-mlir", cl::init(false));
-static cl::opt<bool> PrintLoweredMLIR("print-lowered-mlir", cl::init(false));
+static cl::opt<bool> PrintAST("print-ast", cl::init(false),
+                              cl::desc("Prints LER AST to STDOUT."));
+static cl::opt<bool>
+    PrintLERMLIR("print-ler-mlir", cl::init(false),
+                 cl::desc("Prints LER dialect MLIR to STDOUT."));
+static cl::opt<bool>
+    PrintLoweredMLIR("print-lowered-mlir", cl::init(false),
+                     cl::desc("Prints lowered LLVM dialect to STDOUT."));
 
 // MLIR out file options
-static cl::opt<bool> OutputLERMLIR("output-ler-mlir", cl::init(false));
-static cl::opt<bool> OutputLoweredMLIR("output-lowered-mlir", cl::init(false));
+static cl::opt<bool>
+    OutputLERMLIR("output-ler-mlir", cl::init(false),
+                  cl::desc("Prints LER dialect MLIR to file."));
+static cl::opt<bool>
+    OutputLoweredMLIR("output-lowered-mlir", cl::init(false),
+                      cl::desc("Prints lowered LLVM dialect to file."));
 
 // Executable Options
-static cl::opt<bool> CompileToExe("exe", cl::init(false));
-cl::opt<bool> OutputLLVMIR("output-llvm-ir", cl::init(false));
-cl::opt<bool> OutputAssembly("output-asm", cl::init(false));
+static cl::opt<bool> CompileToExe("exe", cl::init(false),
+                                  cl::desc("Produces an executable."));
+cl::opt<bool> OutputLLVMIR("output-llvm-ir", cl::init(false),
+                           cl::desc("Prints intermediary LLVM IR to file."));
+cl::opt<bool>
+    OutputAssembly("output-asm", cl::init(false),
+                   cl::desc("Prints intermediary assembly language to file."));
 
 static std::error_code EC;
 
