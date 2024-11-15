@@ -3,6 +3,7 @@
 // Implementation of more complex utility functions.
 #include <filesystem>
 #include <ler-ir/LERUtils.h>
+#include <llvm/Support/CommandLine.h>
 #include <mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/ModuleTranslation.h>
@@ -53,14 +54,14 @@ void moduleToExecutable(ModuleOp Module, StringRef Prefix) {
 
   // Construct compilation and assembly command.
   std::stringstream CmdStr;
-  CmdStr << "llc " << LLOutFile << " -o " << AsmOutFile << " && "
+  CmdStr << "llc " << LLOutFile << " -O3 -o " << AsmOutFile << " && "
          <<
 #if defined(__clang__)
       "clang "
 #elif defined(__GNUC__)
       "gcc "
 #endif
-         << AsmOutFile << " -o " << ExecOutFile;
+         << AsmOutFile << " -O3 -o " << ExecOutFile;
 
   // Execute!
   system(CmdStr.str().c_str());
