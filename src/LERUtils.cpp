@@ -53,14 +53,14 @@ void moduleToExecutable(ModuleOp Module, StringRef Prefix) {
 
   // Construct compilation and assembly command.
   std::stringstream CmdStr;
-  CmdStr << "llc " << LLOutFile << " -o " << AsmOutFile << " && "
+  CmdStr << "llc " << LLOutFile << " -O3 -o " << AsmOutFile << " && "
          <<
 #if defined(__clang__)
       "clang "
 #elif defined(__GNUC__)
       "gcc "
 #endif
-         << AsmOutFile << " -o " << ExecOutFile;
+         << AsmOutFile << " -O3 -o " << ExecOutFile;
 
   // Execute!
   system(CmdStr.str().c_str());
