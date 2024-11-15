@@ -4,7 +4,6 @@ project(LER-IR LANGUAGES CXX C)
 
 # Misc CXX/CMake options.
 set(CMAKE_COLOR_DIAGNOSTICS ON)
-set(CMAKE_CXX_COMPILER clang++)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_INCLUDE_CURRENT_DIR)
@@ -36,7 +35,15 @@ include_directories(${MLIR_INCLUDE_DIRS})
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 
 # Dependent libs
-set(LER_LIBS ${LLVM_LIBS} ${dialect_libs} LERAnalysis LERIR LERTransforms LERConversions)
+set(LER_LIBS
+    ${LLVM_LIBS}
+    ${dialect_libs}
+    LERAnalysis
+    LERIR
+    LERTransforms
+    LERConversions
+    MLIRToLLVMIRTranslationRegistration)
+
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 
 # Executable

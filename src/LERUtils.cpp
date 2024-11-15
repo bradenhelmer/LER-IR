@@ -3,6 +3,7 @@
 // Implementation of more complex utility functions.
 #include <filesystem>
 #include <ler-ir/LERUtils.h>
+#include <llvm/Support/CommandLine.h>
 #include <mlir/Target/LLVMIR/Dialect/Builtin/BuiltinToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/Dialect/LLVMIR/LLVMToLLVMIRTranslation.h>
 #include <mlir/Target/LLVMIR/ModuleTranslation.h>
