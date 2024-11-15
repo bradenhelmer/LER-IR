@@ -1,1 +1,0 @@
-^Rk|2,NK|^Rj|2,NJ|^Ri|2,NI|^Rm|0,NM|(1-x$i$)*u(m,1,j,k)+x$i$*u(m,NI,j,k)=px
