@@ -1,6 +1,6 @@
 # LER-IR Compiler
 
-LER-IR is an frontenc compiler and MLIR dialect for optimizing redudancy across loops. It is based of the paper: [‘GLORE: Generalized Loop Redundancy Elimination upon LER-Notation’](https://research.csc.ncsu.edu/picture/publications/papers/oopsla17.pdf) (Shen, Ding 2017).
+LER-IR is an frontenc compiler and MLIR dialect for compiling LER notation into executables. It is based of the paper: [‘GLORE: Generalized Loop Redundancy Elimination upon LER-Notation’](https://research.csc.ncsu.edu/picture/publications/papers/oopsla17.pdf) (Shen, Ding 2017).
 
 ## Getting Started
 To get started with this project, ensure you have the following installed on your system:
@@ -25,7 +25,7 @@ cmake -S . -G Ninja -B build
 cmake --build build
 ```
 
-An executable named `ler-opt` will be in the `build` directory.
+An executable named `ler-compile` will be in the `build` directory.
 
 ## [USAGE](./docs/USAGE.md)
 

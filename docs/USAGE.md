@@ -1,9 +1,9 @@
-# `ler-opt` Usage Guide
+# `ler-compile` Usage Guide
 ### See the [README](../README.md) for build instructions.
 
 ## Basic Usage
 
-The `ler-opt` executable takes a singular positional argument which is the name of the LER file to be compiled. An example file named [`case10.txt`](../test/case10.txt) contains the LER notation like so:
+The `ler-compile` executable takes a singular positional argument which is the name of the LER file to be compiled. An example file named [`case10.txt`](../test/case10.txt) contains the LER notation like so:
 
     ^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]
 
@@ -24,7 +24,7 @@ for (int i = 1; i < M; ++i)
 
 To invoke the compiler, run:
 
-    ./ler-opt case10.txt
+    ./ler-compile case10.txt
 
 Simply running the compiler like this will **nots** produce any output. There are many command line options that specify the behavior of the compiler. 
 

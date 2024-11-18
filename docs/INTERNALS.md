@@ -1,4 +1,4 @@
-# `ler-opt` Internals Guide
+# `ler-compile` Internals Guide
 
 This document is aimed for future developers looking to gain an understanding on the internals
 of how this tool works. It is not a huge codebase, but there many steps taken, along with the 

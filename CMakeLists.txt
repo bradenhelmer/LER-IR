@@ -11,6 +11,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 
+# Java Optimizer
+set(OPTIMIZER_DIR ${CMAKE_SOURCE_DIR}/optimizer)
+file(GLOB OPTIMIZER_SOURCES
+	"${OPTIMIZER_DIR}/*.java"
+)
+add_custom_target(optimizer
+	COMMAND javac ${OPTIMIZER_SOURCES}
+)
+
 # Headers and Sources
 file(GLOB SRC "${CMAKE_SOURCE_DIR}/src/*.cpp")
 file(GLOB HEADERS "${CMAKE_SOURCE_DIR}/include/*.h")
@@ -47,14 +56,12 @@ set(LER_LIBS
 get_property(dialect_libs GLOBAL PROPERTY MLIR_DIALECT_LIBS)
 
 # Executable
-add_executable(ler-opt ${SRC})
-add_dependencies(ler-opt LERAnalysis LERIR)
-target_link_libraries(ler-opt ${LER_LIBS})
+add_executable(ler-compile ${SRC})
+add_dependencies(ler-compile LERAnalysis LERIR)
+target_link_libraries(ler-compile ${LER_LIBS})
 
-add_subdirectory(docs)
 add_subdirectory(include)
 add_subdirectory(src)
-add_subdirectory(test)
 
 add_custom_target(gen-docs
 	COMMAND
@@ -63,3 +70,4 @@ add_custom_target(gen-docs
     docs/Dialects/LERDialect.md
     docs/Dialects/LERPasses.md
 )
+
