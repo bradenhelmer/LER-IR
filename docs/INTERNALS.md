@@ -119,13 +119,13 @@ on the purpose of thsese passes that can be found [here](./LERPasses.md).
 ### Source Files (Descriptions in auto-generated docs).
 - [Passes.td](../include/ler-ir/Passes.td) - TableGen pass definitions.
 - [Passes.h](../include/ler-ir/Passes.h) - Pass header file.
-- [InjectInductionVars.cpp](./src/Transformations/InjectInductionVars.cpp)
-- [ConvertArrayAccToMemref.cpp](./src/Conversion/ConvertArrayAccToMemref.cpp)
-- [ConvertLoopsToAffineSCF.cpp](./src/Conversion/ConvertLoopsToAffineSCF.cpp)
-- [ConvertToArith.cpp](./src/Conversion/ConvertToArith.cpp)
-- [ConvertToLLVM.cpp](./src/Conversion/ConvertToLLVM.cpp)
-- [Misc.h](./include/ler-ir/Analysis/Misc.h) - Miscellaneous analysis definitions.
-- [Misc.cpp](./src/Analysis/Misc.cpp) - Miscellaneous analysis implementations.
+- [InjectInductionVars.cpp](../src/Transformations/InjectInductionVars.cpp)
+- [ConvertArrayAccToMemref.cpp](../src/Conversion/ConvertArrayAccToMemref.cpp)
+- [ConvertLoopsToAffineSCF.cpp](../src/Conversion/ConvertLoopsToAffineSCF.cpp)
+- [ConvertToArith.cpp](../src/Conversion/ConvertToArith.cpp)
+- [ConvertToLLVM.cpp](../src/Conversion/ConvertToLLVM.cpp)
+- [Misc.h](../include/ler-ir/Analysis/Misc.h) - Miscellaneous analysis definitions.
+- [Misc.cpp](../src/Analysis/Misc.cpp) - Miscellaneous analysis implementations.
 
 ### Implementation Notes
 - Each pass is given its own source file.
@@ -135,8 +135,8 @@ on the purpose of thsese passes that can be found [here](./LERPasses.md).
 ### Overview
 This is the final stage in the compiler pipeline, invoked by passing the compiler the `--exe` option.
 ### Source Files
-- [LERUtils.h](./include/ler-ir/LERUtils.h) - Defines the `moduleToExecutable` method.
-- [LERUtils.cpp](./src/LERUtils.cpp) - Implements the `moduleToExecutable` method.
+- [LERUtils.h](../include/ler-ir/LERUtils.h) - Defines the `moduleToExecutable` method.
+- [LERUtils.cpp](../src/LERUtils.cpp) - Implements the `moduleToExecutable` method.
 ### Implementation Notes
 - The `moduleToExecutable` is a three stage method to lower the lowered `LLVMDialect` into an executable:
 
