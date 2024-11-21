@@ -182,38 +182,38 @@ public class Glory {
             else{
                 lerstatementlist.get(0).R = lerstatement.R;
             }
-            System.out.println();
-            // print ler statements
-            System.out.println("----------------------------------");
-            System.out.println("      Formula Simplification      ");
-            System.out.println("----------------------------------");
-            for (LERStatement l : lerstatementlist){
-                System.out.println(l.toString());
-            }
-            System.out.println();
-            System.out.println("-------------------------------");
-            System.out.println("      Operand Abstraction      ");
-            System.out.println("-------------------------------");
-            for (LERStatement l : lerstatementlist){
-                System.out.println(l.toAbstractString());
-            }
-
-            System.out.println();
-            System.out.println("------------------------------");
-            System.out.println("      Loop Encapsulation      ");
-            System.out.println("------------------------------");
-
+            //System.out.println();
+            //// print ler statements
+            //System.out.println("----------------------------------");
+            //System.out.println("      Formula Simplification      ");
+            //System.out.println("----------------------------------");
+            //for (LERStatement l : lerstatementlist){
+            //    System.out.println(l.toString());
+            //}
+            //System.out.println();
+            //System.out.println("-------------------------------");
+            //System.out.println("      Operand Abstraction      ");
+            //System.out.println("-------------------------------");
+            //for (LERStatement l : lerstatementlist){
+            //    System.out.println(l.toAbstractString());
+            //}
+            //
+            //System.out.println();
+            //System.out.println("------------------------------");
+            //System.out.println("      Loop Encapsulation      ");
+            //System.out.println("------------------------------");
+            //
             // Loop encapsulation
             for (LERStatement l : lerstatementlist){
                 l.encapsulateLoops();
-                System.out.println(l.toEncapsulatedString());
+                //System.out.println(l.toEncapsulatedString());
             }
             
-            System.out.println();
-            System.out.println("-----------------------------------");
-            System.out.println("      Minimum Union Algorithm      ");
-            System.out.println("-----------------------------------");
-
+            //System.out.println();
+            //System.out.println("-----------------------------------");
+            //System.out.println("      Minimum Union Algorithm      ");
+            //System.out.println("-----------------------------------");
+			
             // Minimum Union Algorithm
             ArrayList<LERStatement> minimumunionlerstatement = new ArrayList<LERStatement>();
             for (LERStatement l : lerstatementlist){
@@ -221,19 +221,19 @@ public class Glory {
                 minimumunionlerstatement.addAll(l.minimumUnion());
             }
 
-            System.out.println();
-            System.out.println("--------------------------------------------");
-            System.out.println("      Remove Redundant Reduction Loops      ");
-            System.out.println("--------------------------------------------");
-
-            for (LERStatement l : minimumunionlerstatement){
-                System.out.println(l.toEncapsulatedString());
-            }
-
-            System.out.println();
-            System.out.println("-------------------------------------");
-            System.out.println("      Operand Closure Algorithm      ");
-            System.out.println("-------------------------------------");
+            //System.out.println();
+            //System.out.println("--------------------------------------------");
+            //System.out.println("      Remove Redundant Reduction Loops      ");
+            //System.out.println("--------------------------------------------");
+            //
+            //for (LERStatement l : minimumunionlerstatement){
+            //    System.out.println(l.toEncapsulatedString());
+            //}
+            //
+            //System.out.println();
+            //System.out.println("-------------------------------------");
+            //System.out.println("      Operand Closure Algorithm      ");
+            //System.out.println("-------------------------------------");
 
             // Redundant Regular Loops
             ArrayList<LERStatement> redundantregularlerstatement = new ArrayList<LERStatement>();
@@ -242,43 +242,43 @@ public class Glory {
                 // l.operandClosure(tmpNames);
             }
 
-            System.out.println();
-            System.out.println("------------------------------------------");
-            System.out.println("      Remove Redundant Regular Loops      ");
-            System.out.println("------------------------------------------");
-
-            for (LERStatement l : redundantregularlerstatement){
-                System.out.println(l.toEncapsulatedString());
-            }
-
-            System.out.println();
-            System.out.println("------------------------------");
-            System.out.println("      Loop Decapsulation      ");
-            System.out.println("------------------------------");
-
+            //System.out.println();
+            //System.out.println("------------------------------------------");
+            //System.out.println("      Remove Redundant Regular Loops      ");
+            //System.out.println("------------------------------------------");
+            //
+            //for (LERStatement l : redundantregularlerstatement){
+            //    System.out.println(l.toEncapsulatedString());
+            //}
+            //
+            //System.out.println();
+            //System.out.println("------------------------------");
+            //System.out.println("      Loop Decapsulation      ");
+            //System.out.println("------------------------------");
+			
             for (LERStatement l : redundantregularlerstatement){
                 l.decapsulateLoops();
-                System.out.println(l.toAbstractString());
+                //System.out.println(l.toAbstractString());
             }
 
-            System.out.println();
-            System.out.println("-----------------------------------------");
-            System.out.println("      Partially Loop-Invariant Loops     ");
-            System.out.println("-----------------------------------------");
+            //System.out.println();
+            //System.out.println("-----------------------------------------");
+            //System.out.println("      Partially Loop-Invariant Loops     ");
+            //System.out.println("-----------------------------------------");
             
             ArrayList<LERStatement> partiallyloopinvariantlist = new ArrayList<LERStatement>();
             for (LERStatement l : redundantregularlerstatement){
                 partiallyloopinvariantlist.add(l.partiallyLoopInvariant());
             }
             
-            for (LERStatement l : partiallyloopinvariantlist){
-                System.out.println(l.toAbstractString());
-            }
-
-            System.out.println();
-            System.out.println("----------------------------------");
-            System.out.println("      Operator Concretization     ");
-            System.out.println("----------------------------------");
+            //for (LERStatement l : partiallyloopinvariantlist){
+            //    System.out.println(l.toAbstractString());
+            //}
+            //
+            //System.out.println();
+            //System.out.println("----------------------------------");
+            //System.out.println("      Operator Concretization     ");
+            //System.out.println("----------------------------------");
 
 
             for (LERStatement l : partiallyloopinvariantlist){
