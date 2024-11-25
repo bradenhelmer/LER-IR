@@ -1,0 +1,1 @@
+Γk∫2,200∫Γj∫2,200∫Γi∫2,200∫Γm∫0,5∫c[m,2]*xi$i$+c[m,3]*yi$j$+c[m,4]*zi$k$+c[m,5]*xi$i$*xi$i$+c[m,6]*yi$j$*yi$j$+c[m,7]*zi$k$*zi$k$+c[m,8]*xi$i$*xi$i$*xi$i$+c[m,9]*yi$j$*yi$j$*yi$j$+c[m,10]*zi$k$*zi$k$*zi$k$+c[m,11]*xi$i$*xi$i$*xi$i$*xi$i$+c[m,12]*yi$j$*yi$j$*yi$j$*yi$j$+c[m,13]*xi$i$*yi$j$*zi$k$*zi$k$=d$j$[m,i]
