@@ -1,3 +1,5 @@
+package optimizer;
+
 import java.util.LinkedList;
 
 public class DirectiveListener extends GloryBaseListener {
