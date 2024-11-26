@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+echo "Running ler-opt compiler..."
+
+INTERMEDIARY_FILE="converted.ler"
+
+if [ $# -eq 0 ]
+then
+	echo "Please provide a filename for compilation!"
+fi
+
+java -cp "optimizer" Glory $1 > $INTERMEDIARY_FILE

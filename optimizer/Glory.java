@@ -59,7 +59,7 @@ public class Glory {
                             relevantIndices.add(factor.id().getText());
                         }
                     }
-                    System.out.println("Relevant indices: " + relevantIndices.toString());
+                    //System.out.println("Relevant indices: " + relevantIndices.toString());
                     lerstatement.R.abstract_index = relevantIndices;
                 }
             }

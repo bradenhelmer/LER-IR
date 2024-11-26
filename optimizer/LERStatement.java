@@ -513,7 +513,7 @@ public class LERStatement {
                 minNode.confirmParent();
             }
         }
-        printForest(forest);
+        //printForest(forest);
         if (forest.isEmpty()) {
             res.add(this);
             return res;
@@ -924,8 +924,8 @@ public class LERStatement {
             closureTree.add(maxNode);
         }
         // Print the closure tree, starting with rootOperand
-        System.out.println("------  Closure Tree  ------");
-        printClosureTree(rootNode, 0);
+        //System.out.println("------  Closure Tree  ------");
+        //printClosureTree(rootNode, 0);
 
         // Run the closure-based algorithm to decide post-order traversal.
 

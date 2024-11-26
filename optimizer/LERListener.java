@@ -55,7 +55,7 @@ public class LERListener extends GloryBaseListener {
             loop.uBound = ctx.forParam().uBound().getText();
         }
         lerStatement.L.add(loop);
-        System.out.println("Loop " + loop.id + " is of type " + loop.loopType);
+        //System.out.println("Loop " + loop.id + " is of type " + loop.loopType);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class LERListener extends GloryBaseListener {
             operand.operandType = LERStatement.OperandType.SCALAR;
         }
         String indexing = operand.index != null ? operand.index.getText() : null;
-        System.out.println("R id: " + operand.id + " dependence: " + operand.dependence + " index: " + indexing);
+        //System.out.println("R id: " + operand.id + " dependence: " + operand.dependence + " index: " + indexing);
         lerStatement.R = operand;
     }
 
