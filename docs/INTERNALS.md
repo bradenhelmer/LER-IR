@@ -74,7 +74,7 @@ The `LERDialect` is defined using TableGen in [LERDialect.td](../include/ler-ir/
 the grammar is essentially mapped to a custom operation in the dialect. For simplicity, each Operation returning an
 `mlir::Value` returns an `I64` type. There is auto-generated documentation for all the operations [here](./LERDialect.md). The LER MLIR generated for the above example is:
 ```mlir
-"builtin.module"() <{sym_name = "../test/case10.txt"}> ({
+"builtin.module"() <{sym_name = "../test/case10.ler"}> ({
   "func.func"() <{function_type = () -> (), sym_name = "main"}> ({
     "ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
     ^bb0(%arg0: index):

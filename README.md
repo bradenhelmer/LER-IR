@@ -10,6 +10,13 @@ To get started with this project, ensure you have the following installed on you
   - Instructions for build LLVM with MLIR can be found [here](https://mlir.llvm.org/getting_started/).
 - [Ninja](https://ninja-build.org/) build system, this is _optional_ but recommended.
 
+### Java Optimizer Integration
+The LER optimizer in the [optimizer](./optimizer) directory requires the Java ANTLR parser library to be compiled:
+
+    cd /usr/local/lib
+    sudo curl -O https://www.antlr.org/download/antlr-4.13.1-complete.jar
+    export CLASSPATH=".:/usr/local/lib/antlr-4.13.1-complete.jar:$CLASSPATH"
+
 ### GNU/UNIX Make Build
 ```shell
 git clone https://github.com/bradenhelmer/LER-IR

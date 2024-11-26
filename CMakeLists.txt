@@ -78,6 +78,5 @@ add_custom_target(gen-docs
 	COMMAND
 	cp ${CMAKE_BINARY_DIR}/docs/Dialects/* ${CMAKE_SOURCE_DIR}/docs/
 	DEPENDS
-    docs/Dialects/LERDialect.md
-    docs/Dialects/LERPasses.md
+	mlir-doc
 )
