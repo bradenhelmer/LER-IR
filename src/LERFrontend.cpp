@@ -201,21 +201,10 @@ void LERParser::advance() {
   }
 }
 
-void LERParser::parseLERStatement(LERStatement &Stmt) {
-  std::unique_ptr<LERLoop> Loop;
-  while ((Loop = parseLoop()))
-    Stmt.addLoop(std::move(Loop));
+void LERParser::parseLERStatement(LERStatement &Stmt) {}
 
-  if (Stmt.getLoopCount() < 1) {
-    ERRS << "At least one loop required in LER Statement!\n";
-    std::exit(1);
-  }
-
-  Stmt.setExpression(parseExpression());
-  hardMatch(ASSIGN);
-  advance();
-  Stmt.setResult(parseResult());
-}
+std::unique_ptr<LERLoopNest> LERParser::parseLoopNest() {}
+std::unique_ptr<LERExpressionResultPair> LERParser::parseExpressionResultPair() {}
 
 std::unique_ptr<LERLoop> LERParser::parseLoop() {
 
