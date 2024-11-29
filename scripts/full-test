@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+#
+# Put this script in your build directory and edit as needed
+#
+
+for file in ../test/*.ler; do
+echo "$file";
+./ler-full $file --print-ast;
+done
