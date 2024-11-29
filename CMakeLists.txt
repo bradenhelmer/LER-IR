@@ -28,7 +28,8 @@ add_custom_target(clean-optimizer
 
 add_custom_target(ler-opt-script
 	COMMAND
-	cp "${CMAKE_SOURCE_DIR}/scripts/ler-full" "${CMAKE_BINARY_DIR}/"
+	cp "${CMAKE_SOURCE_DIR}/scripts/ler-full" "${CMAKE_BINARY_DIR}/" &&
+	cp "${CMAKE_SOURCE_DIR}/scripts/notation_converter.py" "${CMAKE_BINARY_DIR}/"
 )
 
 # Headers and Sources

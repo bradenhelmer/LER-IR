@@ -8,10 +8,11 @@ import sys
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Please specify a filename for conversion!")
+    if len(sys.argv) < 3:
+        print("Usage: <file to convert> <out file>")
         exit(1)
     filename = sys.argv[1]
+    converted_file = sys.argv[2];
     old_ler = None
     new_ler = None
 
@@ -25,7 +26,7 @@ def main():
     new_ler = new_ler.replace("Π", "^P")
     new_ler = new_ler.replace("Ψ", "^W")
 
-    with open(filename, "w") as new_ler_file:
+    with open(converted_file, "w") as new_ler_file:
         new_ler_file.write(new_ler)
 
 

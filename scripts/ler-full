@@ -2,11 +2,26 @@
 
 echo "Running ler-opt compiler..."
 
-INTERMEDIARY_FILE="converted.ler"
+OPTIMIZED="optimized.ler"
+CONVERTED="converted.ler"
 
 if [ $# -eq 0 ]
 then
 	echo "Please provide a filename for compilation!"
 fi
 
-java -cp "optimizer" Glory $1 > $INTERMEDIARY_FILE
+filename=$1
+shift
+compile_args=("$@")
+
+# Run optimizer
+java optimizer.Glory $filename > $OPTIMIZED
+
+# Convert notation
+python3 notation_converter.py $OPTIMIZED $CONVERTED
+
+# Run compiler
+./ler-compile $CONVERTED ${compile_args[@]}
+
+rm OPTIMIZED
+rm CONVERTED
