@@ -24,4 +24,4 @@ python3 notation_converter.py $OPTIMIZED $CONVERTED
 ./ler-compile $CONVERTED ${compile_args[@]}
 
 rm $OPTIMIZED
-rm $CONVERTED
+# rm $CONVERTED

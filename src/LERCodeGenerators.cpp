@@ -33,25 +33,25 @@ static OpBuilder Builder(&Context);
 #define UNKNOWN_LOC Builder.getUnknownLoc()
 
 ModuleOp LERStatement::codeGen() {
-  Context.loadDialect<LERDialect, FuncDialect, ArithDialect>();
-  auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);
-  LERModule->setAttr("ler.Source",
-                     Builder.getStringAttr(LERSource.getBuffer()));
-  Builder.setInsertionPointToStart(LERModule.getBody());
-
-  auto MainFunc =
-      FuncOp::create(UNKNOWN_LOC, "main", Builder.getFunctionType({}, {}));
-  LERModule.push_back(MainFunc);
-  Builder.setInsertionPointToStart(MainFunc.addEntryBlock());
-
-  for (const auto &Loop : Loops) {
-    Loop->codeGen();
-  }
-
-  auto E = Expression->codeGen();
-  Builder.create<ResultOp>(UNKNOWN_LOC, E, Result->codeGen());
-
-  return LERModule;
+  /*Context.loadDialect<LERDialect, FuncDialect, ArithDialect>();*/
+  /*auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);*/
+  /*LERModule->setAttr("ler.Source",*/
+  /*                   Builder.getStringAttr(LERSource.getBuffer()));*/
+  /*Builder.setInsertionPointToStart(LERModule.getBody());*/
+  /**/
+  /*auto MainFunc =*/
+  /*    FuncOp::create(UNKNOWN_LOC, "main", Builder.getFunctionType({}, {}));*/
+  /*LERModule.push_back(MainFunc);*/
+  /*Builder.setInsertionPointToStart(MainFunc.addEntryBlock());*/
+  /**/
+  /*for (const auto &Loop : Loops) {*/
+  /*  Loop->codeGen();*/
+  /*}*/
+  /**/
+  /*auto E = Expression->codeGen();*/
+  /*Builder.create<ResultOp>(UNKNOWN_LOC, E, Result->codeGen());*/
+  /**/
+  /*return LERModule;*/
 }
 
 void LERWhileLoop::codeGen() {

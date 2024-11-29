@@ -7,8 +7,8 @@ using llvm::StringRef;
 namespace ler {
 
 void LERStatement::print() {
-  OUTS << "LER AST for source: " << LERSource.getBufferStart() << "\n"
-       << getStrRep() << "\n\n";
+  OUTS << "LER AST for source: \n"
+       << LERSource.getBufferStart() << '\n' << getStrRep() << "\n";
 }
 
 StringRef LERLoopNest::getStrRep() {
@@ -32,16 +32,18 @@ StringRef LERExpressionResultPair::getStrRep() {
            << Result->getStrRep().str();
     StrRep = Stream.str();
   }
-  return StrRep;
+  return StringRef(StrRep);
 }
 
 StringRef LERStatement::getStrRep() {
   if (StrRep.empty()) {
     std::stringstream Stream;
-	for (const auto &Stmt : Statements) {
-	  Stream << Stmt->getStrRep().str() << '\n';
-	}
+    for (const auto &Stmt : Statements) {
+      Stream << Stmt->getStrRep().str() << '\n';
+    }
+    StrRep = Stream.str();
   }
+  return StringRef(StrRep);
 }
 
 StringRef LERForLoop::getStrRep() {

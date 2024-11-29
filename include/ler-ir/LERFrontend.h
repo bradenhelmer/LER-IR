@@ -38,6 +38,10 @@ inline static bool isForLoop(LERTokenKind Kind) {
   return Kind == REGULAR_FOR || Kind == SUMMATION || Kind == PRODUCT;
 }
 
+inline static bool isLoopIdentifier(LERTokenKind Kind) {
+  return isForLoop(Kind) || Kind == WHILE;
+}
+
 inline static const char *getOperatorString(LERTokenKind Kind) {
   switch (Kind) {
   case ADD:
@@ -141,6 +145,7 @@ protected:
   std::string StrRep = "";
 
 public:
+  virtual ~LERASTNode() = default;
   void print(uint8_t Indent = 0) { OUTS << getStrRep(); }
   virtual StringRef getStrRep() = 0;
 };
@@ -148,13 +153,11 @@ public:
 // Base classes.
 class LERLoop : public LERASTNode {
 public:
-  virtual ~LERLoop() = default;
   virtual void codeGen() = 0;
 };
 
 class LERExpression : public LERASTNode {
 public:
-  virtual ~LERExpression() = default;
   virtual Value codeGen() = 0;
 };
 
@@ -271,7 +274,11 @@ class LERExpressionResultPair : public LERASTNode {
   std::unique_ptr<LERExpression> Result;
 
 public:
+  LERExpressionResultPair(std::unique_ptr<LERExpression> Expression,
+                          std::unique_ptr<LERExpression> Result)
+      : Expression(std::move(Expression)), Result(std::move(Result)) {}
   LERExpressionResultPair() = default;
+
   void setExpression(std::unique_ptr<LERExpression> Expression) {
     this->Expression = std::move(Expression);
   }
@@ -293,11 +300,8 @@ public:
     Loops.push_back(std::move(Loop));
   }
   size_t getLoopCount() const { return Loops.size(); }
-  void setExpression(std::unique_ptr<LERExpression> Expression) {
-    this->ExprResult->setExpression(std::move(Expression));
-  }
-  void setResult(std::unique_ptr<LERExpression> Result) {
-    this->ExprResult->setResult(std::move(Result));
+  void setExprResult(std::unique_ptr<LERExpressionResultPair> ExprResult) {
+    this->ExprResult = (std::move(ExprResult));
   }
   void print();
   StringRef getStrRep() override;

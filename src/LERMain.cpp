@@ -68,47 +68,47 @@ int main(int argc, char **argv) {
   if (PrintAST)
     AST.print();
 
-  // Generate MLIR
-  auto LERMLIR = AST.codeGen();
-
-  if (PrintLERMLIR)
-    LERMLIR.print(OUTS);
-
-  if (OutputLERMLIR) {
-    raw_fd_stream LERMLIROutFile((MLIROutputPrefix + "-ler.mlir").str(), EC);
-    LERMLIR.print(LERMLIROutFile);
-  }
-
-  // Lower to LLVM Dialect
-  PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());
-  PM.addPass(createInjectInductionVars());
-  PM.addPass(createConvertToArith());
-  PM.addPass(createConvertArrayAccToMemref());
-  PM.addPass(createConvertLoopsToAffineSCF());
-  PM.addPass(createConvertToLLVM());
-
-  if (failed(PM.run(LERMLIR)))
-    LERMLIR.emitError("Pass error!");
-
-  if (PrintLoweredMLIR)
-    LERMLIR.print(OUTS);
-
-  if (OutputLoweredMLIR) {
-    raw_fd_stream LoweredMLIROutFile((MLIROutputPrefix + "-lowered.mlir").str(),
-                                     EC);
-    LERMLIR.print(LoweredMLIROutFile);
-  }
-
-  if (CompileToExe) {
-    moduleToExecutable(LERMLIR, Prefix);
-  } else {
-    if (OutputLLVMIR)
-      ERRS << "LLVM IR will not be generated and printed if -exe option not "
-              "specified!\n";
-    if (OutputAssembly)
-      ERRS << "Assembly will not be generated and printed if -exe option not "
-              "specified!\n";
-  }
+  /*// Generate MLIR*/
+  /*auto LERMLIR = AST.codeGen();*/
+  /**/
+  /*if (PrintLERMLIR)*/
+  /*  LERMLIR.print(OUTS);*/
+  /**/
+  /*if (OutputLERMLIR) {*/
+  /*  raw_fd_stream LERMLIROutFile((MLIROutputPrefix + "-ler.mlir").str(), EC);*/
+  /*  LERMLIR.print(LERMLIROutFile);*/
+  /*}*/
+  /**/
+  /*// Lower to LLVM Dialect*/
+  /*PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());*/
+  /*PM.addPass(createInjectInductionVars());*/
+  /*PM.addPass(createConvertToArith());*/
+  /*PM.addPass(createConvertArrayAccToMemref());*/
+  /*PM.addPass(createConvertLoopsToAffineSCF());*/
+  /*PM.addPass(createConvertToLLVM());*/
+  /**/
+  /*if (failed(PM.run(LERMLIR)))*/
+  /*  LERMLIR.emitError("Pass error!");*/
+  /**/
+  /*if (PrintLoweredMLIR)*/
+  /*  LERMLIR.print(OUTS);*/
+  /**/
+  /*if (OutputLoweredMLIR) {*/
+  /*  raw_fd_stream LoweredMLIROutFile((MLIROutputPrefix + "-lowered.mlir").str(),*/
+  /*                                   EC);*/
+  /*  LERMLIR.print(LoweredMLIROutFile);*/
+  /*}*/
+  /**/
+  /*if (CompileToExe) {*/
+  /*  moduleToExecutable(LERMLIR, Prefix);*/
+  /*} else {*/
+  /*  if (OutputLLVMIR)*/
+  /*    ERRS << "LLVM IR will not be generated and printed if -exe option not "*/
+  /*            "specified!\n";*/
+  /*  if (OutputAssembly)*/
+  /*    ERRS << "Assembly will not be generated and printed if -exe option not "*/
+  /*            "specified!\n";*/
+  /*}*/
 
   return 0;
 }
