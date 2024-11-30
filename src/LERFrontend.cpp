@@ -207,7 +207,6 @@ void LERParser::parseLERStatement(LERStatement &Stmt) {
     if (isLoopIdentifier(CurrToken.Kind)) {
       StmtToAdd = parseLoopNest();
     } else {
-      hardMatch(ID);
       StmtToAdd = parseExpressionResultPair();
     }
     Stmt.addStatement(std::move(StmtToAdd));

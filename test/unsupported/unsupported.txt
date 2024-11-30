@@ -29,3 +29,8 @@ java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "<
 line 1:27 mismatched input ' ' expecting {',', '-', '+', '*', '/', ']', LETTER, DIGIT}
 java.lang.NullPointerException: Cannot invoke "org.antlr.v4.runtime.tree.ParseTree.getChildCount()" because "<local10>" is null
         at optimizer.Glory.main(Glory.java:46)
+
+6. 6_fmri.in.ler - Optimizer produces syntax with -> and : operators that ler-compile does not support:
+inter=tmp1
+^Ri|0,10000|b[i]*(incl[i]:incl[i-1]+c[i]->incl[0]=c[0])=tmp2[i]
+^Ri|0,10000|^Rj|0,i|tmp1*tmp2[i]=a[i]
