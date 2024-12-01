@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
       std::make_unique<LERParser>(std::make_unique<LERLexer>(InputFilename));
 
   LERTree AST(Parser->getSourceRef());
-  Parser->parseLERStatement(AST);
+  Parser->parseLERTree(AST);
 
   if (PrintAST)
     AST.print();

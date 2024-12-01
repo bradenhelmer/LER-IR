@@ -201,7 +201,7 @@ void LERParser::advance() {
   }
 }
 
-void LERParser::parseLERStatement(LERTree &Stmt) {
+void LERParser::parseLERTree(LERTree &Stmt) {
   std::unique_ptr<LERStatement> StmtToAdd;
   do {
     if (isLoopIdentifier(CurrToken.Kind)) {

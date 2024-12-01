@@ -356,7 +356,7 @@ class LERParser {
 
   // Parsing methods for each non-terminal in LER Grammar.
 public:
-  void parseLERStatement(LERTree &Stmt);
+  void parseLERTree(LERTree &Stmt);
 
 private:
   std::unique_ptr<LERExpression>
