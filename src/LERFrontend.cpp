@@ -201,8 +201,8 @@ void LERParser::advance() {
   }
 }
 
-void LERParser::parseLERStatement(LERStatement &Stmt) {
-  std::unique_ptr<LERASTNode> StmtToAdd;
+void LERParser::parseLERStatement(LERTree &Stmt) {
+  std::unique_ptr<LERStatement> StmtToAdd;
   do {
     if (isLoopIdentifier(CurrToken.Kind)) {
       StmtToAdd = parseLoopNest();
@@ -218,7 +218,7 @@ void LERParser::parseLERStatement(LERStatement &Stmt) {
 }
 
 std::unique_ptr<LERLoopNest> LERParser::parseLoopNest() {
-  std::unique_ptr<LERLoop> Loop;
+  std::unique_ptr<LERStatement> Loop;
   std::unique_ptr<LERLoopNest> LoopNest = std::make_unique<LERLoopNest>();
 
   while ((Loop = parseLoop()))
@@ -235,7 +235,6 @@ std::unique_ptr<LERExpressionResultPair>
 LERParser::parseExpressionResultPair() {
   std::unique_ptr<LERExpressionResultPair> ExprResult =
       std::make_unique<LERExpressionResultPair>();
-
   ExprResult->setExpression(parseExpression());
   hardMatch(ASSIGN);
   advance();
@@ -244,7 +243,7 @@ LERParser::parseExpressionResultPair() {
   return ExprResult;
 }
 
-std::unique_ptr<LERLoop> LERParser::parseLoop() {
+std::unique_ptr<LERStatement> LERParser::parseLoop() {
 
   if (isForLoop(CurrToken.Kind)) {
     auto ForLoop = std::make_unique<LERForLoop>(CurrToken.Kind);

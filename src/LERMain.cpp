@@ -62,22 +62,23 @@ int main(int argc, char **argv) {
   auto Parser =
       std::make_unique<LERParser>(std::make_unique<LERLexer>(InputFilename));
 
-  LERStatement AST(Parser->getSourceRef());
+  LERTree AST(Parser->getSourceRef());
   Parser->parseLERStatement(AST);
 
   if (PrintAST)
     AST.print();
 
-  /*// Generate MLIR*/
-  /*auto LERMLIR = AST.codeGen();*/
-  /**/
-  /*if (PrintLERMLIR)*/
-  /*  LERMLIR.print(OUTS);*/
-  /**/
-  /*if (OutputLERMLIR) {*/
-  /*  raw_fd_stream LERMLIROutFile((MLIROutputPrefix + "-ler.mlir").str(), EC);*/
-  /*  LERMLIR.print(LERMLIROutFile);*/
-  /*}*/
+  // Generate MLIR
+  auto LERMLIR = AST.codeGen();
+
+  if (PrintLERMLIR)
+    LERMLIR.print(OUTS);
+
+  if (OutputLERMLIR) {
+    raw_fd_stream LERMLIROutFile((MLIROutputPrefix + "-ler.mlir").str(), EC);
+    LERMLIR.print(LERMLIROutFile);
+  }
+
   /**/
   /*// Lower to LLVM Dialect*/
   /*PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());*/

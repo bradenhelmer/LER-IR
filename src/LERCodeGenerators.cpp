@@ -28,30 +28,40 @@ extern llvm::cl::opt<std::string> InputFilename;
 namespace {
 static MLIRContext Context;
 static OpBuilder Builder(&Context);
+FuncOp MainFunc;
 } // namespace
 
 #define UNKNOWN_LOC Builder.getUnknownLoc()
 
-ModuleOp LERStatement::codeGen() {
-  /*Context.loadDialect<LERDialect, FuncDialect, ArithDialect>();*/
-  /*auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);*/
-  /*LERModule->setAttr("ler.Source",*/
-  /*                   Builder.getStringAttr(LERSource.getBuffer()));*/
-  /*Builder.setInsertionPointToStart(LERModule.getBody());*/
-  /**/
-  /*auto MainFunc =*/
-  /*    FuncOp::create(UNKNOWN_LOC, "main", Builder.getFunctionType({}, {}));*/
-  /*LERModule.push_back(MainFunc);*/
-  /*Builder.setInsertionPointToStart(MainFunc.addEntryBlock());*/
-  /**/
-  /*for (const auto &Loop : Loops) {*/
-  /*  Loop->codeGen();*/
-  /*}*/
-  /**/
-  /*auto E = Expression->codeGen();*/
-  /*Builder.create<ResultOp>(UNKNOWN_LOC, E, Result->codeGen());*/
-  /**/
-  /*return LERModule;*/
+ModuleOp LERTree::codeGen() {
+  Context.loadDialect<LERDialect, FuncDialect, ArithDialect>();
+  auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);
+  LERModule->setAttr("ler.Source",
+                     Builder.getStringAttr(LERSource.getBuffer()));
+  Builder.setInsertionPointToStart(LERModule.getBody());
+
+  MainFunc =
+      FuncOp::create(UNKNOWN_LOC, "main", Builder.getFunctionType({}, {}));
+  LERModule.push_back(MainFunc);
+  Builder.setInsertionPointToStart(MainFunc.addEntryBlock());
+
+  for (const auto &Stmt : Statements) {
+    Stmt->codeGen();
+  }
+
+  return LERModule;
+}
+
+void LERLoopNest::codeGen() {
+  for (const auto &Loop : Loops)
+    Loop->codeGen();
+  ExprResult->codeGen();
+  Builder.setInsertionPointToEnd(&MainFunc.getBody().back());
+}
+
+void LERExpressionResultPair::codeGen() {
+  auto E = Expression->codeGen();
+  auto R = Builder.create<ResultOp>(UNKNOWN_LOC, E, Result->codeGen());
 }
 
 void LERWhileLoop::codeGen() {

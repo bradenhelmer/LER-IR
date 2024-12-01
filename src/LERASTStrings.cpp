@@ -6,7 +6,7 @@
 using llvm::StringRef;
 namespace ler {
 
-void LERStatement::print() {
+void LERTree::print() {
   OUTS << "LER AST for source: \n"
        << LERSource.getBufferStart() << '\n' << getStrRep() << "\n";
 }
@@ -35,7 +35,7 @@ StringRef LERExpressionResultPair::getStrRep() {
   return StringRef(StrRep);
 }
 
-StringRef LERStatement::getStrRep() {
+StringRef LERTree::getStrRep() {
   if (StrRep.empty()) {
     std::stringstream Stream;
     for (const auto &Stmt : Statements) {
