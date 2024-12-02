@@ -5,30 +5,10 @@ internumber=tmp1
 ^Ri|0,100|^Rj|0,100|a[j]*b[i,j]*(incl[j]:incl[j-1]+1->incl[0]=1)=tmp2$i$[i,j]
 ^Ri|0,100|^Rj|0,100|^Rk|1,j|tmp1*tmp2$i$[i,j]=c$j$[i,j]
 
-2. case.ler - Optimizer throws a division by zero error:
-java.lang.ArithmeticException: / by zero
-        at optimizer.LERStatement.minimumUnion(LERStatement.java:509)
-        at optimizer.Glory.main(Glory.java:223)
-
-3. case1.ler - Optimizer throws a division by zero error:
-java.lang.ArithmeticException: / by zero
-        at optimizer.LERStatement.minimumUnion(LERStatement.java:509)
-        at optimizer.Glory.main(Glory.java:223)
-
-2. case5.ler - Optimizer throws a division by zero error:
-java.lang.ArithmeticException: / by zero
-        at optimizer.LERStatement.minimumUnion(LERStatement.java:509)
-        at optimizer.Glory.main(Glory.java:223)
-
 4. case9.ler - Optmimizer throws NullPointerException:
 java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "<local13>.id" is null
         at optimizer.Glory.getFactorOperands(Glory.java:338)
         at optimizer.Glory.main(Glory.java:85)
-
-5. case10.ler Optimizer throws NullPointerException:
-line 1:27 mismatched input ' ' expecting {',', '-', '+', '*', '/', ']', LETTER, DIGIT}
-java.lang.NullPointerException: Cannot invoke "org.antlr.v4.runtime.tree.ParseTree.getChildCount()" because "<local10>" is null
-        at optimizer.Glory.main(Glory.java:46)
 
 6. 6_fmri.in.ler - Optimizer produces syntax with -> and : operators that ler-compile does not support:
 inter=tmp1
