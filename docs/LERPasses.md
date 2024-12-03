@@ -61,7 +61,7 @@ module @"../test/case10.ler" attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x
 }
 ```
 **NOTE**: This pass assumes the the `-inject-induction-vars` pass has ran before.
-### `-convert-for-to-affine`
+### `-convert-loops-to-affine-scf`
 
 _Converts ler.[Production|Regular|Summartion]ForLoops to affine.for. This pass also converts ler.WhileLoops to SCF.while._
 

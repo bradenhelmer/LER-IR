@@ -76,7 +76,7 @@ def ConvertArrayAccToMemref
   let dependentDialects = ["::mlir::memref::MemRefDialect"];
 }
 
-def ConvertLoopsToAffineSCF : Pass<"convert-for-to-affine", "mlir::ModuleOp"> {
+def ConvertLoopsToAffineSCF : Pass<"convert-loops-to-affine-scf", "mlir::ModuleOp"> {
   let summary =
       "Converts ler.[Production|Regular|Summartion]ForLoops to affine.for. "
       "This pass also converts ler.WhileLoops to SCF.while.";
