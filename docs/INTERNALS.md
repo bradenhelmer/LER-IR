@@ -54,7 +54,7 @@ The core files of the LER frontend are:
 `LERParser`, hence the `friend class LERParser` in the class.
 -  The `LERParser` has a method for each non-terminal rule in the grammar. Most of these methods return
 a `unique_ptr` of some AST class.
-- The `parseLERStatement()` method is the core routine to parse an LER AST, this is called from the main function in [LERMain.cpp](../src/LERMain.cpp) and returns an `LERStatement` class.
+- The `parseLERTree()` method is the core routine to parse an LER AST, this is called from the main function in [LERMain.cpp](../src/LERMain.cpp) and returns an `LERTree` class.
 - `LERParser::lexAndPrintTokens()` is useful for debugging purposes.
 - The command line option `--print-ast` will print the AST out. The above example will print:
 ```
@@ -67,7 +67,7 @@ LER AST for source: ^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]
 
 ## MLIR Code Generation
 ### Overview
-After the frontend has parsed the LER notation into an AST, stored in a `LERStatement` class, this AST is lowered into a
+After the frontend has parsed the LER notation into an AST, stored in a `LERTree` class, this AST is lowered into a
 `mlir::ModuleOp` containing operations from the `LERDialect`.
 
 The `LERDialect` is defined using TableGen in [LERDialect.td](../include/ler-ir/IR/LERDialect.td). Each structure in 
