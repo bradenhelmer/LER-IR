@@ -101,7 +101,6 @@ the grammar is essentially mapped to a custom operation in the dialect. For simp
     "func.return"() : () -> ()
   }) : () -> ()
 }) {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j]*y[j,k]=r[i]\0A"} : () -> ()
-}) {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} : () -> ()
 ```
 
 ### Source Files
