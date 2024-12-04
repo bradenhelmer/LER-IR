@@ -1,11 +1,11 @@
-# `ler-opt` Usage Guide
+# `ler-compile` Usage Guide
 ### See the [README](../README.md) for build instructions.
 
 ## Basic Usage
 
-The `ler-opt` executable takes a singular positional argument which is the name of the LER file to be compiled. An example file named [`case10.txt`](../test/case10.txt) contains the LER notation like so:
+The `ler-compile` executable takes a singular positional argument which is the name of the LER file to be compiled. An example file named [`case10.ler`](../test/case10.ler) contains the LER notation like so:
 
-    ^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]
+    Γi∫1,M∫Σk∫0,i∫Σj∫0,i∫x[i,j] * y[j,k] = r[i]
 
 This maps to the equivalent C code like so:
 
@@ -22,9 +22,13 @@ for (int i = 1; i < M; ++i)
 }
 ```
 
-To invoke the compiler, run:
+First convert the LER to the version accepted by the compiler with [this python script](../scripts/notation_converter.py):
 
-    ./ler-opt case10.txt
+    python3 notation_converter.py case10.ler > case10.ler_conv
+
+Then invoke the compiler on the converted file like so:
+
+    ./ler-compile case10.ler_conv
 
 Simply running the compiler like this will **nots** produce any output. There are many command line options that specify the behavior of the compiler. 
 
@@ -38,3 +42,9 @@ Simply running the compiler like this will **nots** produce any output. There ar
 | `--print-ast`           | Prints LER AST to STDOUT.                      |
 | `--print-ler-mlir`      | Prints LER dialect MLIR to STDOUT.             |
 | `--print-lowered-mlir`  | Prints lowered LLVM dialect to STDOUT.         |
+
+## Integrated Java Optimizer Use
+Additionally, a script is [provided](../scripts/ler-full) to invoked the Java LER optimizer, converter, and compiler. First ensure that the ler-compile binary has been built and run the script in the build directory:
+
+    cd build
+    ./ler-full case10.ler

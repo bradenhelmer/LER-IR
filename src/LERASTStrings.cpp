@@ -6,12 +6,12 @@
 using llvm::StringRef;
 namespace ler {
 
-void LERStatement::print() {
-  OUTS << "LER AST for source: " << LERSource.getBufferStart() << "\n"
-       << getStrRep() << "\n\n";
+void LERTree::print() {
+  OUTS << "LER AST for source: \n"
+       << LERSource.getBufferStart() << '\n' << getStrRep() << "\n";
 }
 
-StringRef LERStatement::getStrRep() {
+StringRef LERLoopNest::getStrRep() {
   if (StrRep.empty()) {
     std::stringstream Stream;
     auto LoopCount = getLoopCount();
@@ -20,8 +20,27 @@ StringRef LERStatement::getStrRep() {
       Stream << std::string(i * 2, ' ') << Loop->getStrRep().str() << '\n';
     }
     Stream << std::string(LoopCount * 2 + 1, ' ')
-           << Expression->getStrRep().str() << " = "
+           << ExprResult->getStrRep().str();
+    StrRep = Stream.str();
+  }
+  return StringRef(StrRep);
+}
+StringRef LERExpressionResultPair::getStrRep() {
+  if (StrRep.empty()) {
+    std::stringstream Stream;
+    Stream << Expression->getStrRep().str() << " = "
            << Result->getStrRep().str();
+    StrRep = Stream.str();
+  }
+  return StringRef(StrRep);
+}
+
+StringRef LERTree::getStrRep() {
+  if (StrRep.empty()) {
+    std::stringstream Stream;
+    for (const auto &Stmt : Statements) {
+      Stream << Stmt->getStrRep().str() << '\n';
+    }
     StrRep = Stream.str();
   }
   return StringRef(StrRep);

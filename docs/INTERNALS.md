@@ -1,4 +1,4 @@
-# `ler-opt` Internals Guide
+# `ler-compile` Internals Guide
 
 This document is aimed for future developers looking to gain an understanding on the internals
 of how this tool works. It is not a huge codebase, but there many steps taken, along with the 
@@ -54,7 +54,7 @@ The core files of the LER frontend are:
 `LERParser`, hence the `friend class LERParser` in the class.
 -  The `LERParser` has a method for each non-terminal rule in the grammar. Most of these methods return
 a `unique_ptr` of some AST class.
-- The `parseLERStatement()` method is the core routine to parse an LER AST, this is called from the main function in [LERMain.cpp](../src/LERMain.cpp) and returns an `LERStatement` class.
+- The `parseLERTree()` method is the core routine to parse an LER AST, this is called from the main function in [LERMain.cpp](../src/LERMain.cpp) and returns an `LERTree` class.
 - `LERParser::lexAndPrintTokens()` is useful for debugging purposes.
 - The command line option `--print-ast` will print the AST out. The above example will print:
 ```
@@ -67,14 +67,14 @@ LER AST for source: ^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]
 
 ## MLIR Code Generation
 ### Overview
-After the frontend has parsed the LER notation into an AST, stored in a `LERStatement` class, this AST is lowered into a
+After the frontend has parsed the LER notation into an AST, stored in a `LERTree` class, this AST is lowered into a
 `mlir::ModuleOp` containing operations from the `LERDialect`.
 
 The `LERDialect` is defined using TableGen in [LERDialect.td](../include/ler-ir/IR/LERDialect.td). Each structure in 
 the grammar is essentially mapped to a custom operation in the dialect. For simplicity, each Operation returning an
 `mlir::Value` returns an `I64` type. There is auto-generated documentation for all the operations [here](./LERDialect.md). The LER MLIR generated for the above example is:
 ```mlir
-"builtin.module"() <{sym_name = "../test/case10.txt"}> ({
+"builtin.module"() <{sym_name = "../test/case10.ler"}> ({
   "func.func"() <{function_type = () -> (), sym_name = "main"}> ({
     "ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
     ^bb0(%arg0: index):

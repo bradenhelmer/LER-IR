@@ -25,7 +25,7 @@ class LER_Op<string mnemonic, list<Trait> traits = []>
 class LER_LoopOp<string mnemonic, list<Trait> traits = []>
     : LER_Op<mnemonic, !listconcat(
                            [
-                             Terminator, SymbolTable,
+                             SymbolTable,
                              DeclareOpInterfaceMethods<LoopLikeOpInterface>
                            ],
                            traits)> {
@@ -64,6 +64,8 @@ class LER_ForLoopOp<string mnemonic>
 def LER_RegularForLoopOp : LER_ForLoopOp<"RegularFor">;
 def LER_SummationForLoopOp : LER_ForLoopOp<"Summation">;
 def LER_ProductionForLoopOp : LER_ForLoopOp<"Production">;
+
+def LER_LoopTerminatorOp : LER_Op<"LoopTerminator", [Terminator]>;
 
 class LER_SubExpressionOp<string mnemonic, list<Trait> traits =
 	[]>: LER_Op<mnemonic, traits>;
@@ -123,7 +125,8 @@ def LER_ParenExprOp : LER_SubExpressionOp<"ParenExpr"> {
   let results = (outs I64 : $Result);
 }
 
-def LER_ResultOp : LER_Op<"Result", [Terminator]> {
+// Generic store, can be used outside loop nests.
+def LER_ResultOp : LER_Op<"Result"> {
   let arguments = (ins AnyType : $Expression, AnyType : $Location);
 }
 

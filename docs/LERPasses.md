@@ -13,7 +13,7 @@ access that is one dimensional like `x[i]` will have an array  created like so:
 Next, the `ler.ArrayAccess` operations will be lowered into `memref.Load`
 operations. A module before this pass may look like:
 ```mlir
-"builtin.module"() <{sym_name = "../test/case10.txt"}> ({
+"builtin.module"() <{sym_name = "../test/case10.ler"}> ({
   "func.func"() <{function_type = () -> (), sym_name = "main"}> ({
 	"ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
 	^bb0(%arg0: index):
@@ -38,7 +38,7 @@ operations. A module before this pass may look like:
 ```
 After:
 ```mlir
-module @"../test/case10.txt" attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} {
+module @"../test/case10.ler" attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} {
  func.func @main() {
    %alloc = memref.alloc() : memref<1000000xi64>
    %alloc_0 = memref.alloc() : memref<1000x1000xi64>
@@ -61,7 +61,7 @@ module @"../test/case10.txt" attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x
 }
 ```
 **NOTE**: This pass assumes the the `-inject-induction-vars` pass has ran before.
-### `-convert-for-to-affine`
+### `-convert-loops-to-affine-scf`
 
 _Converts ler.[Production|Regular|Summartion]ForLoops to affine.for. This pass also converts ler.WhileLoops to SCF.while._
 
@@ -76,7 +76,7 @@ also converts `ler.Result` ops to `memref.Store` and `ler.Variable` ops to
 `arith.Constant`. Module before:
 
 ```mlir
-"builtin.module"() <{sym_name = "../test/case10.txt"}> ({
+"builtin.module"() <{sym_name = "../test/case10.ler"}> ({
    "func.func"() <{function_type = () -> (), sym_name = "main"}> ({
    "ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
    ^bb0(%arg0: index):
@@ -102,7 +102,7 @@ also converts `ler.Result` ops to `memref.Store` and `ler.Variable` ops to
 ```
 Module after:
 ```mlir
-module @"../test/case10.txt" attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} {
+module @"../test/case10.ler" attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} {
   func.func @main() {
 	affine.for %arg0 = 1 to 1000000 {
 	  affine.for %arg1 = 0 to 1000000 {

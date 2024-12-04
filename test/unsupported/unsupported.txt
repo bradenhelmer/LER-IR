@@ -1,0 +1,16 @@
+Unsupported test cases with reasons
+
+1. 10_ssym.in_1.ler - Optimizer produces syntax with -> and : operators that ler-compile does not support:
+internumber=tmp1
+^Ri|0,100|^Rj|0,100|a[j]*b[i,j]*(incl[j]:incl[j-1]+1->incl[0]=1)=tmp2$i$[i,j]
+^Ri|0,100|^Rj|0,100|^Rk|1,j|tmp1*tmp2$i$[i,j]=c$j$[i,j]
+
+4. case9.ler - Optmimizer throws NullPointerException:
+java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "<local13>.id" is null
+        at optimizer.Glory.getFactorOperands(Glory.java:338)
+        at optimizer.Glory.main(Glory.java:85)
+
+6. 6_fmri.in.ler - Optimizer produces syntax with -> and : operators that ler-compile does not support:
+inter=tmp1
+^Ri|0,10000|b[i]*(incl[i]:incl[i-1]+c[i]->incl[0]=c[0])=tmp2[i]
+^Ri|0,10000|^Rj|0,i|tmp1*tmp2[i]=a[i]

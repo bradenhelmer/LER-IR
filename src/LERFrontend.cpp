@@ -201,23 +201,49 @@ void LERParser::advance() {
   }
 }
 
-void LERParser::parseLERStatement(LERStatement &Stmt) {
-  std::unique_ptr<LERLoop> Loop;
-  while ((Loop = parseLoop()))
-    Stmt.addLoop(std::move(Loop));
+void LERParser::parseLERTree(LERTree &Stmt) {
+  std::unique_ptr<LERStatement> StmtToAdd;
+  do {
+    if (isLoopIdentifier(CurrToken.Kind)) {
+      StmtToAdd = parseLoopNest();
+    } else {
+      StmtToAdd = parseExpressionResultPair();
+    }
+    Stmt.addStatement(std::move(StmtToAdd));
 
-  if (Stmt.getLoopCount() < 1) {
+    if (softMatch(NEWLINE))
+      advance();
+
+  } while (!softMatch(LER_EOF));
+}
+
+std::unique_ptr<LERLoopNest> LERParser::parseLoopNest() {
+  std::unique_ptr<LERStatement> Loop;
+  std::unique_ptr<LERLoopNest> LoopNest = std::make_unique<LERLoopNest>();
+
+  while ((Loop = parseLoop()))
+    LoopNest->addLoop(std::move(Loop));
+
+  if (LoopNest->getLoopCount() < 1) {
     ERRS << "At least one loop required in LER Statement!\n";
     std::exit(1);
   }
-
-  Stmt.setExpression(parseExpression());
+  LoopNest->setExprResult(parseExpressionResultPair());
+  return LoopNest;
+}
+std::unique_ptr<LERExpressionResultPair>
+LERParser::parseExpressionResultPair() {
+  std::unique_ptr<LERExpressionResultPair> ExprResult =
+      std::make_unique<LERExpressionResultPair>();
+  ExprResult->setExpression(parseExpression());
   hardMatch(ASSIGN);
   advance();
-  Stmt.setResult(parseResult());
+  ExprResult->setResult(parseResult());
+
+  return ExprResult;
 }
 
-std::unique_ptr<LERLoop> LERParser::parseLoop() {
+std::unique_ptr<LERStatement> LERParser::parseLoop() {
 
   if (isForLoop(CurrToken.Kind)) {
     auto ForLoop = std::make_unique<LERForLoop>(CurrToken.Kind);
@@ -448,6 +474,8 @@ std::unique_ptr<LERExpression> LERParser::parseResult() {
     std::unique_ptr<LERExpression> Parameter;
     while ((Parameter = parseExpression()))
       FuncCallExpr->addParameter(std::move(Parameter));
+    hardMatch(CLOSE_PAREN);
+    advance();
     return FuncCallExpr;
   }
   if (softMatch(OPEN_BRACKET)) {
@@ -457,6 +485,8 @@ std::unique_ptr<LERExpression> LERParser::parseResult() {
     std::unique_ptr<LERExpression> Index;
     while ((Index = parseExpression()))
       ArrayAccExpr->addIndex(std::move(Index));
+    hardMatch(CLOSE_BRACKET);
+    advance();
     return ArrayAccExpr;
   }
 

@@ -1,1 +1,1 @@
-^Si|1,M|^Sj|1,M|^Rk|1,N|^Sl|1,N|x[i,l]*y[l,j]*s[j,k]=r[i,k]
+Σi∫1,M∫Σj∫1,M∫Γk∫1,N∫Σl∫1,N∫x[i,l]*y[l,j]*s[j,k]=r[i,k]

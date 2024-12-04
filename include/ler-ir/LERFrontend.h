@@ -38,6 +38,10 @@ inline static bool isForLoop(LERTokenKind Kind) {
   return Kind == REGULAR_FOR || Kind == SUMMATION || Kind == PRODUCT;
 }
 
+inline static bool isLoopIdentifier(LERTokenKind Kind) {
+  return isForLoop(Kind) || Kind == WHILE;
+}
+
 inline static const char *getOperatorString(LERTokenKind Kind) {
   switch (Kind) {
   case ADD:
@@ -141,25 +145,24 @@ protected:
   std::string StrRep = "";
 
 public:
+  virtual ~LERASTNode() = default;
   void print(uint8_t Indent = 0) { OUTS << getStrRep(); }
   virtual StringRef getStrRep() = 0;
 };
 
 // Base classes.
-class LERLoop : public LERASTNode {
+class LERStatement : public LERASTNode {
 public:
-  virtual ~LERLoop() = default;
   virtual void codeGen() = 0;
 };
 
 class LERExpression : public LERASTNode {
 public:
-  virtual ~LERExpression() = default;
   virtual Value codeGen() = 0;
 };
 
 // Loops
-class LERForLoop : public LERLoop {
+class LERForLoop : public LERStatement {
   LERTokenKind Kind;
   std::string LoopIdxVar;
   std::string LBound;
@@ -174,7 +177,7 @@ public:
   void codeGen() override;
 };
 
-class LERWhileLoop : public LERLoop {
+class LERWhileLoop : public LERStatement {
   SmallVector<std::string, 16> Subscripts;
   std::unique_ptr<LERExpression> ConditionExpression = nullptr;
 
@@ -265,30 +268,65 @@ public:
   Value codeGen() override;
 };
 
-// Main tree
-class LERStatement : public LERASTNode {
-  SmallVector<std::unique_ptr<LERLoop>, 16> Loops;
+// An Expression/Result pair AST node.
+class LERExpressionResultPair : public LERStatement {
   std::unique_ptr<LERExpression> Expression;
   std::unique_ptr<LERExpression> Result;
 
-  MemoryBufferRef LERSource;
-
 public:
-  LERStatement(MemoryBufferRef LERSource) : LERSource(LERSource) {}
+  LERExpressionResultPair(std::unique_ptr<LERExpression> Expression,
+                          std::unique_ptr<LERExpression> Result)
+      : Expression(std::move(Expression)), Result(std::move(Result)) {}
+  LERExpressionResultPair() = default;
 
-  void addLoop(std::unique_ptr<LERLoop> Loop) {
-    Loops.push_back(std::move(Loop));
-  }
-  size_t getLoopCount() const { return Loops.size(); }
   void setExpression(std::unique_ptr<LERExpression> Expression) {
     this->Expression = std::move(Expression);
   }
   void setResult(std::unique_ptr<LERExpression> Result) {
     this->Result = std::move(Result);
   }
+  void codeGen() override;
+  StringRef getStrRep() override;
+};
+
+// LER Loop nest consisting of loops, an expression, and a result.
+class LERLoopNest : public LERStatement {
+  SmallVector<std::unique_ptr<LERStatement>, 16> Loops;
+  std::unique_ptr<LERExpressionResultPair> ExprResult;
+
+public:
+  LERLoopNest() = default;
+
+  void addLoop(std::unique_ptr<LERStatement> Loop) {
+    Loops.push_back(std::move(Loop));
+  }
+  size_t getLoopCount() const { return Loops.size(); }
+  void setExprResult(std::unique_ptr<LERExpressionResultPair> ExprResult) {
+    this->ExprResult = (std::move(ExprResult));
+  }
+  void print();
+  void codeGen() override;
+  StringRef getStrRep() override;
+};
+
+// Main LER tree, supports multilined statements.
+class LERTree : public LERASTNode {
+  // Loopnests and lone expression / result pairs.
+  SmallVector<std::unique_ptr<LERStatement>> Statements;
+
+  // LER source code.
+  MemoryBufferRef LERSource;
+
+public:
+  LERTree(MemoryBufferRef LERSource) : LERSource(LERSource) {}
+
+  void addStatement(std::unique_ptr<LERStatement> Stmt) {
+    Statements.push_back(std::move(Stmt));
+  }
+
+  ModuleOp codeGen();
   void print();
   StringRef getStrRep() override;
-  ModuleOp codeGen();
 };
 
 // PARSING
@@ -318,20 +356,22 @@ class LERParser {
 
   // Parsing methods for each non-terminal in LER Grammar.
 public:
-  void parseLERStatement(LERStatement &Stmt);
+  void parseLERTree(LERTree &Stmt);
 
 private:
-  std::unique_ptr<LERLoop> parseLoop();
-  void parseForParam(LERForLoop *ForLoop);
-  std::string parseBound();
-  std::unique_ptr<LERExpression> parseConditionExpression();
-  std::unique_ptr<LERExpression> parseCondition();
-  bool parseSubscript(std::string *Out);
-  std::unique_ptr<LERExpression> parseExpression();
   std::unique_ptr<LERExpression>
   parseBinaryOpExpression(std::unique_ptr<LERExpression> LHS,
                           LEROperatorPrecedence Prec);
+  std::string parseBound();
+  std::unique_ptr<LERExpression> parseCondition();
+  std::unique_ptr<LERExpression> parseConditionExpression();
+  std::unique_ptr<LERExpression> parseExpression();
+  std::unique_ptr<LERExpressionResultPair> parseExpressionResultPair();
+  void parseForParam(LERForLoop *ForLoop);
+  std::unique_ptr<LERLoopNest> parseLoopNest();
+  std::unique_ptr<LERStatement> parseLoop();
   std::unique_ptr<LERExpression> parseResult();
+  bool parseSubscript(std::string *Out);
 
 public:
   LERParser(std::unique_ptr<LERLexer> Lexer) : Lexer(std::move(Lexer)) {

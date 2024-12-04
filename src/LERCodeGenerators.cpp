@@ -22,36 +22,53 @@ using mlir::arith::ArithDialect;
 using mlir::arith::IndexCastOp;
 using mlir::func::FuncDialect;
 using mlir::func::FuncOp;
+using mlir::func::ReturnOp;
 
 extern llvm::cl::opt<std::string> InputFilename;
 
 namespace {
 static MLIRContext Context;
 static OpBuilder Builder(&Context);
+FuncOp MainFunc;
+static bool InLoopNest = false;
 } // namespace
 
 #define UNKNOWN_LOC Builder.getUnknownLoc()
 
-ModuleOp LERStatement::codeGen() {
+ModuleOp LERTree::codeGen() {
   Context.loadDialect<LERDialect, FuncDialect, ArithDialect>();
   auto LERModule = Builder.create<ModuleOp>(UNKNOWN_LOC, InputFilename);
   LERModule->setAttr("ler.Source",
                      Builder.getStringAttr(LERSource.getBuffer()));
   Builder.setInsertionPointToStart(LERModule.getBody());
 
-  auto MainFunc =
+  MainFunc =
       FuncOp::create(UNKNOWN_LOC, "main", Builder.getFunctionType({}, {}));
   LERModule.push_back(MainFunc);
   Builder.setInsertionPointToStart(MainFunc.addEntryBlock());
 
-  for (const auto &Loop : Loops) {
-    Loop->codeGen();
+  for (const auto &Stmt : Statements) {
+    Stmt->codeGen();
   }
 
-  auto E = Expression->codeGen();
-  Builder.create<ResultOp>(UNKNOWN_LOC, E, Result->codeGen());
+  Builder.create<ReturnOp>(Builder.getUnknownLoc());
 
   return LERModule;
+}
+
+void LERLoopNest::codeGen() {
+
+  InLoopNest = true;
+  for (const auto &Loop : Loops)
+    Loop->codeGen();
+  ExprResult->codeGen();
+  Builder.setInsertionPointToEnd(&MainFunc.getBody().back());
+  InLoopNest = false;
+}
+
+void LERExpressionResultPair::codeGen() {
+  auto E = Expression->codeGen();
+  Builder.create<ResultOp>(UNKNOWN_LOC, E, Result->codeGen());
 }
 
 void LERWhileLoop::codeGen() {
@@ -88,6 +105,9 @@ void LERForLoop::codeGen() {
 
   auto BlkArg = FLBlock.addArgument(Builder.getIndexType(), ForLoop->getLoc());
   insertIdxBlkArgMap(LoopIdxVar, BlkArg);
+
+  Builder.setInsertionPointToEnd(&FLBlock);
+  Builder.create<LoopTerminatorOp>(UNKNOWN_LOC);
 
   Builder.setInsertionPointToStart(&FLBlock);
 }

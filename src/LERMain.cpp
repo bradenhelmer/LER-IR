@@ -1,6 +1,6 @@
 // LERMain.cpp
 // ~~~~~~~~
-// Entry into ler-opt tool.
+// Entry into ler-compile tool;
 #include <ler-ir/IR/LERDialect.h>
 #include <ler-ir/LERFrontend.h>
 #include <ler-ir/LERUtils.h>
@@ -52,7 +52,7 @@ static std::error_code EC;
 int main(int argc, char **argv) {
   cl::ParseCommandLineOptions(argc, argv);
   llvm::InitLLVM(argc, argv);
-  OUTS << "Running ler-opt tool...\n";
+  OUTS << "Running ler-compile tool...\n";
 
   auto RawFileName = InputFilename.substr(InputFilename.find_last_of('/') + 1);
   auto Prefix = RawFileName.substr(0, RawFileName.find_last_of('.'));
@@ -62,8 +62,8 @@ int main(int argc, char **argv) {
   auto Parser =
       std::make_unique<LERParser>(std::make_unique<LERLexer>(InputFilename));
 
-  LERStatement AST(Parser->getSourceRef());
-  Parser->parseLERStatement(AST);
+  LERTree AST(Parser->getSourceRef());
+  Parser->parseLERTree(AST);
 
   if (PrintAST)
     AST.print();
@@ -81,11 +81,11 @@ int main(int argc, char **argv) {
 
   // Lower to LLVM Dialect
   PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());
-  PM.addPass(createInjectInductionVars());
-  PM.addPass(createConvertToArith());
-  PM.addPass(createConvertArrayAccToMemref());
-  PM.addPass(createConvertLoopsToAffineSCF());
-  PM.addPass(createConvertToLLVM());
+  /*PM.addPass(createInjectInductionVars());*/
+  /*PM.addPass(createConvertToArith());*/
+  /*PM.addPass(createConvertArrayAccToMemref());*/
+  /*PM.addPass(createConvertLoopsToAffineSCF());*/
+  /*PM.addPass(createConvertToLLVM());*/
 
   if (failed(PM.run(LERMLIR)))
     LERMLIR.emitError("Pass error!");
