@@ -75,7 +75,7 @@ the grammar is essentially mapped to a custom operation in the dialect. For simp
 `mlir::Value` returns an `I64` type. There is auto-generated documentation for all the operations [here](./LERDialect.md). The LER MLIR generated for the above example is:
 ```mlir
 "builtin.module"() <{sym_name = "../test/case10.ler"}> ({
-  "func.func"() <{function_type = () -> (), sym_name = "main"}> ({
+    "func.func"() <{function_type = () -> (), sym_name = "main"}> ({
     "ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
     ^bb0(%arg0: index):
       "ler.Summation"() <{LoopIdxVar = "k", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
@@ -92,13 +92,17 @@ the grammar is essentially mapped to a custom operation in the dialect. For simp
           %7 = "ler.Variable"() <{Name = @i}> : () -> i64
           %8 = "ler.ArrayAccess"(%7) <{ArrayName = @r}> : (i64) -> i64
           "ler.Result"(%6, %8) : (i64, i64) -> ()
+          "ler.LoopTerminator"() : () -> ()
         }) : () -> ()
+        "ler.LoopTerminator"() : () -> ()
       }) : () -> ()
+      "ler.LoopTerminator"() : () -> ()
     }) : () -> ()
+    "func.return"() : () -> ()
   }) : () -> ()
+}) {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j]*y[j,k]=r[i]\0A"} : () -> ()
 }) {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} : () -> ()
 ```
-
 
 ### Source Files
 - [LERDialect.td](../include/ler-ir/IR/LERDialect.td) - TableGen dialect definitions.
