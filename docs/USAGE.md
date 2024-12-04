@@ -22,13 +22,13 @@ for (int i = 1; i < M; ++i)
 }
 ```
 
-First convert the LER to the version accepted by the compiler with [this python script](../scripts/notation_converter.py):
+1. First convert the LER to the version accepted by the compiler with [this python script](../scripts/notation_converter.py):
 
-    python3 notation_converter.py case10.ler > case10.ler_conv
+        python3 notation_converter.py case10.ler case10.ler_conv
 
-Then invoke the compiler on the converted file like so:
+2. Then invoke the compiler on the converted file like so:
 
-    ./ler-compile case10.ler_conv
+        ./ler-compile case10.ler_conv
 
 Simply running the compiler like this will **nots** produce any output. There are many command line options that specify the behavior of the compiler. 
 
@@ -43,7 +43,7 @@ Simply running the compiler like this will **nots** produce any output. There ar
 | `--print-ler-mlir`      | Prints LER dialect MLIR to STDOUT.             |
 | `--print-lowered-mlir`  | Prints lowered LLVM dialect to STDOUT.         |
 
-## Integrated Java Optimizer Use
+## Integrated Java Optimizer Use (Not Stable)
 Additionally, a script is [provided](../scripts/ler-full) to invoked the Java LER optimizer, converter, and compiler. First ensure that the ler-compile binary has been built and run the script in the build directory:
 
     cd build
