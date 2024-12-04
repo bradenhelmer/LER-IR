@@ -10,7 +10,7 @@ To get started with this project, ensure you have the following installed on you
   - Instructions for build LLVM with MLIR can be found [here](https://mlir.llvm.org/getting_started/).
 - [Ninja](https://ninja-build.org/) build system, this is _optional_ but recommended.
 
-### Java Optimizer Integration
+### Java Optimizer Integration (Not Stable)
 The LER optimizer in the [optimizer](./optimizer) directory requires the Java ANTLR parser library to be compiled:
 
     cd /usr/local/lib
@@ -41,3 +41,5 @@ An executable named `ler-compile` will be in the `build` directory.
 ## [LER DIALECT & OPERATIONS](./docs/LERDialect.md) (MLIR Auto Generated)
 
 ## [LER PASSES](./docs/LERPasses.md) (MLIR Auto Generated)
+
+## [CURRENT ISSUES](https://github.com/bradenhelmer/LER-IR/issues)
