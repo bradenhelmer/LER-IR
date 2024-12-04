@@ -137,7 +137,7 @@ Effects: `MemoryEffects::Effect{}`
 
 ### `ler.Production` (::ler::ProductionForLoopOp)
 
-Traits: `SymbolTable`, `Terminator`
+Traits: `SymbolTable`
 
 Interfaces: `LoopLikeOpInterface`
 
@@ -154,7 +154,7 @@ Interfaces: `LoopLikeOpInterface`
 
 ### `ler.RegularFor` (::ler::RegularForLoopOp)
 
-Traits: `SymbolTable`, `Terminator`
+Traits: `SymbolTable`
 
 Interfaces: `LoopLikeOpInterface`
 
@@ -170,6 +170,16 @@ Interfaces: `LoopLikeOpInterface`
 
 
 ### `ler.Result` (::ler::ResultOp)
+
+#### Operands:
+
+| Operand | Description |
+| :-----: | ----------- |
+| `Expression` | any type
+| `Location` | any type
+
+
+### `ler.Result` (::ler::ResultTerminatorOp)
 
 Traits: `Terminator`
 
@@ -199,7 +209,7 @@ Traits: `Terminator`
 
 ### `ler.Summation` (::ler::SummationForLoopOp)
 
-Traits: `SymbolTable`, `Terminator`
+Traits: `SymbolTable`
 
 Interfaces: `LoopLikeOpInterface`
 
@@ -233,7 +243,7 @@ Interfaces: `LoopLikeOpInterface`
 
 ### `ler.While` (::ler::WhileLoopOp)
 
-Traits: `SymbolTable`, `Terminator`
+Traits: `SymbolTable`
 
 Interfaces: `LoopLikeOpInterface`
 

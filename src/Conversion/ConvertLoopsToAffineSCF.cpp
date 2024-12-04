@@ -287,11 +287,6 @@ struct ConvertLoopsToAffineSCFPass
             &Ctx);
     Patterns.add<ResultOpLowering>(&Ctx, &Op);
 
-    OpBuilder Builder(&Ctx);
-    Builder.setInsertionPointToEnd(
-        &Op.lookupSymbol("main")->getRegion(0).front());
-    Builder.create<ReturnOp>(Builder.getUnknownLoc());
-
     if (failed(applyFullConversion(Op, AffineSCFTarget, std::move(Patterns)))) {
       signalPassFailure();
     }

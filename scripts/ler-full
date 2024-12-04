@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "Running ler-opt compiler..."
+echo "Running pipeline..."
 
 OPTIMIZED="optimized.ler"
 CONVERTED="converted.ler"
@@ -23,5 +23,5 @@ python3 notation_converter.py $OPTIMIZED $CONVERTED
 # Run compiler
 ./ler-compile $CONVERTED ${compile_args[@]}
 
-rm $OPTIMIZED
+# rm $OPTIMIZED
 # rm $CONVERTED
