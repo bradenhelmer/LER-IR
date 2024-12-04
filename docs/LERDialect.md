@@ -104,6 +104,11 @@ Effects: `MemoryEffects::Effect{}`
 | `Result` | 64-bit signless integer
 
 
+### `ler.LoopTerminator` (::ler::LoopTerminatorOp)
+
+Traits: `Terminator`
+
+
 ### `ler.Mul` (::ler::MulOp)
 
 #### Operands:
@@ -170,18 +175,6 @@ Interfaces: `LoopLikeOpInterface`
 
 
 ### `ler.Result` (::ler::ResultOp)
-
-#### Operands:
-
-| Operand | Description |
-| :-----: | ----------- |
-| `Expression` | any type
-| `Location` | any type
-
-
-### `ler.Result` (::ler::ResultTerminatorOp)
-
-Traits: `Terminator`
 
 #### Operands:
 

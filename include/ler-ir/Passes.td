@@ -25,7 +25,7 @@ def ConvertArrayAccToMemref
 	operations. A module before this pass may look like:
 	```mlir
 	"builtin.module"() <{sym_name = "../test/case10.ler"}> ({
-	  "func.func"() <{function_type = () -> (), sym_name = "main"}> ({
+		"func.func"() <{function_type = () -> (), sym_name = "main"}> ({
 		"ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
 		^bb0(%arg0: index):
 		  "ler.Summation"() <{LoopIdxVar = "k", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
@@ -42,32 +42,41 @@ def ConvertArrayAccToMemref
 			  %7 = "ler.Variable"() <{Name = @i}> : () -> i64
 			  %8 = "ler.ArrayAccess"(%7) <{ArrayName = @r}> : (i64) -> i64
 			  "ler.Result"(%6, %8) : (i64, i64) -> ()
+			  "ler.LoopTerminator"() : () -> ()
 			}) : () -> ()
+			"ler.LoopTerminator"() : () -> ()
 		  }) : () -> ()
+		  "ler.LoopTerminator"() : () -> ()
 		}) : () -> ()
+		"func.return"() : () -> ()
 	  }) : () -> ()
+	}) {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j]*y[j,k]=r[i]\0A"} : () -> ()
 	```
 	After:
 	```mlir
-	module @"../test/case10.ler" attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} {
-  func.func @main() {
-    %alloc = memref.alloc() : memref<1000000xi64>
-    %alloc_0 = memref.alloc() : memref<1000x1000xi64>
-    %alloc_1 = memref.alloc() : memref<1000x1000xi64>
-    "ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
-    ^bb0(%arg0: index):
-      "ler.Summation"() <{LoopIdxVar = "k", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
-      ^bb0(%arg1: index):
-        "ler.Summation"() <{LoopIdxVar = "j", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
-        ^bb0(%arg2: index):
-          %0 = memref.load %alloc_1[%arg0, %arg2] : memref<1000x1000xi64>
-          %1 = memref.load %alloc_0[%arg2, %arg1] : memref<1000x1000xi64>
-          %2 = "ler.Mul"(%0, %1) : (i64, i64) -> i64
-          %3 = memref.load %alloc[%arg0] : memref<1000000xi64>
-          "ler.Result"(%2, %3) : (i64, i64) -> ()
+	module @case10.conv.ler attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j]*y[j,k]=r[i]\0A"} {
+	  func.func @main() {
+		%alloc = memref.alloc() : memref<1000000xi64>
+		%alloc_0 = memref.alloc() : memref<1000x1000xi64>
+		%alloc_1 = memref.alloc() : memref<1000x1000xi64>
+		"ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
+		^bb0(%arg0: index):
+		  "ler.Summation"() <{LoopIdxVar = "k", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
+		  ^bb0(%arg1: index):
+			"ler.Summation"() <{LoopIdxVar = "j", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
+			^bb0(%arg2: index):
+			  %0 = memref.load %alloc_1[%arg0, %arg2] : memref<1000x1000xi64>
+			  %1 = memref.load %alloc_0[%arg2, %arg1] : memref<1000x1000xi64>
+			  %2 = arith.muli %0, %1 : i64
+			  %3 = memref.load %alloc[%arg0] : memref<1000000xi64>
+			  "ler.Result"(%2, %3) : (i64, i64) -> ()
+			  "ler.LoopTerminator"() : () -> ()
 			}) : () -> ()
+			"ler.LoopTerminator"() : () -> ()
 		  }) : () -> ()
+		  "ler.LoopTerminator"() : () -> ()
 		}) : () -> ()
+		return
 	  }
 	}
 	```
@@ -92,41 +101,47 @@ def ConvertLoopsToAffineSCF : Pass<"convert-loops-to-affine-scf", "mlir::ModuleO
 	`arith.Constant`. Module before:
 
 	```mlir
-	"builtin.module"() <{sym_name = "../test/case10.ler"}> ({
-    "func.func"() <{function_type = () -> (), sym_name = "main"}> ({
-    "ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
-    ^bb0(%arg0: index):
-      "ler.Summation"() <{LoopIdxVar = "k", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
-      ^bb0(%arg1: index):
-        "ler.Summation"() <{LoopIdxVar = "j", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
-        ^bb0(%arg2: index):
-          %0 = "ler.Variable"() <{Name = @i}> : () -> i64
-          %1 = "ler.Variable"() <{Name = @j}> : () -> i64
-          %2 = "ler.ArrayAccess"(%0, %1) <{ArrayName = @x}> : (i64, i64) -> i64
-          %3 = "ler.Variable"() <{Name = @j}> : () -> i64
-          %4 = "ler.Variable"() <{Name = @k}> : () -> i64
-          %5 = "ler.ArrayAccess"(%3, %4) <{ArrayName = @y}> : (i64, i64) -> i64
-          %6 = "ler.Mul"(%2, %5) : (i64, i64) -> i64
-          %7 = "ler.Variable"() <{Name = @i}> : () -> i64
-          %8 = "ler.ArrayAccess"(%7) <{ArrayName = @r}> : (i64) -> i64
-          "ler.Result"(%6, %8) : (i64, i64) -> ()
+	module @case10.conv.ler attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j]*y[j,k]=r[i]\0A"} {
+	  func.func @main() {
+		%alloc = memref.alloc() : memref<1000000xi64>
+		%alloc_0 = memref.alloc() : memref<1000x1000xi64>
+		%alloc_1 = memref.alloc() : memref<1000x1000xi64>
+		"ler.RegularFor"() <{LoopIdxVar = "i", LowerBound = 1 : i64, Step = 1 : i64, UpperBound = @M}> ({
+		^bb0(%arg0: index):
+		  "ler.Summation"() <{LoopIdxVar = "k", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
+		  ^bb0(%arg1: index):
+			"ler.Summation"() <{LoopIdxVar = "j", LowerBound = 0 : i64, Step = 1 : i64, UpperBound = @i}> ({
+			^bb0(%arg2: index):
+			  %0 = memref.load %alloc_1[%arg0, %arg2] : memref<1000x1000xi64>
+			  %1 = memref.load %alloc_0[%arg2, %arg1] : memref<1000x1000xi64>
+			  %2 = arith.muli %0, %1 : i64
+			  %3 = memref.load %alloc[%arg0] : memref<1000000xi64>
+			  "ler.Result"(%2, %3) : (i64, i64) -> ()
+			  "ler.LoopTerminator"() : () -> ()
 			}) : () -> ()
+			"ler.LoopTerminator"() : () -> ()
 		  }) : () -> ()
+		  "ler.LoopTerminator"() : () -> ()
 		}) : () -> ()
-	  }) : () -> ()
-	}) {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} : () -> ()
+		return
+	  }
+	}
 	```
 	Module after:
 	```mlir
-	module @"../test/case10.ler" attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j] * y[j,k] = r[i]\0A\0A"} {
+	module @case10.conv.ler attributes {ler.Source = "^Ri|1,M|^Sk|0,i|^Sj|0,i|x[i,j]*y[j,k]=r[i]\0A"} {
 	  func.func @main() {
-		affine.for %arg0 = 1 to 1000000 {
-		  affine.for %arg1 = 0 to 1000000 {
-			affine.for %arg2 = 0 to 1000000 {
-			  %0 = "ler.ArrayAccess"(%arg0, %arg2) <{ArrayName = @x}> : (index, index) -> i64
-			  %1 = "ler.ArrayAccess"(%arg2, %arg1) <{ArrayName = @y}> : (index, index) -> i64
-			  %2 = "ler.Mul"(%0, %1) : (i64, i64) -> i64
-			  %3 = "ler.ArrayAccess"(%arg0) <{ArrayName = @r}> : (index) -> i64
+		%alloc = memref.alloc() : memref<1000000xi64>
+		%alloc_0 = memref.alloc() : memref<1000x1000xi64>
+		%alloc_1 = memref.alloc() : memref<1000x1000xi64>
+		affine.for %arg0 = 1 to 1000 {
+		  affine.for %arg1 = 0 to 1000 {
+			affine.for %arg2 = 0 to 1000 {
+			  %0 = memref.load %alloc_1[%arg0, %arg2] : memref<1000x1000xi64>
+			  %1 = memref.load %alloc_0[%arg2, %arg1] : memref<1000x1000xi64>
+			  %2 = arith.muli %0, %1 : i64
+			  %3 = memref.load %alloc[%arg0] : memref<1000000xi64>
+			  memref.store %2, %alloc[%arg0] : memref<1000000xi64>
 			}
 		  }
 		}

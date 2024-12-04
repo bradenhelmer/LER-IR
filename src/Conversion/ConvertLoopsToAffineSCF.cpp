@@ -262,6 +262,18 @@ struct VariableOpLowering : public OpConversionPattern<VariableOp> {
   }
 };
 
+struct LoopTerminatorOpLowering : public OpConversionPattern<LoopTerminatorOp> {
+
+  using OpConversionPattern<LoopTerminatorOp>::OpConversionPattern;
+
+  LogicalResult
+  matchAndRewrite(LoopTerminatorOp Op, OpAdaptor Adaptor,
+                  ConversionPatternRewriter &ReWriter) const override {
+    Op.erase();
+    return success();
+  }
+};
+
 struct ConvertLoopsToAffineSCFPass
     : public ler::impl::ConvertLoopsToAffineSCFBase<
           ConvertLoopsToAffineSCFPass> {
@@ -277,14 +289,13 @@ struct ConvertLoopsToAffineSCFPass
                          FuncDialect, LERDialect, MemRefDialect, SCFDialect>();
 
     AffineSCFTarget
-        .addIllegalOp<ProductionForLoopOp, RegularForLoopOp, ResultOp,
-                      SummationForLoopOp, WhileLoopOp, VariableOp>();
+        .addIllegalOp<LoopTerminatorOp, ProductionForLoopOp, RegularForLoopOp,
+                      ResultOp, SummationForLoopOp, WhileLoopOp, VariableOp>();
 
     RewritePatternSet Patterns(&Ctx);
-    Patterns
-        .add<ProductionForLoopOpLowering, SummationForLoopOpLowering,
-             RegularForLoopOpLowering, WhileLoopOpLowering, VariableOpLowering>(
-            &Ctx);
+    Patterns.add<LoopTerminatorOpLowering, ProductionForLoopOpLowering,
+                 SummationForLoopOpLowering, RegularForLoopOpLowering,
+                 WhileLoopOpLowering, VariableOpLowering>(&Ctx);
     Patterns.add<ResultOpLowering>(&Ctx, &Op);
 
     if (failed(applyFullConversion(Op, AffineSCFTarget, std::move(Patterns)))) {

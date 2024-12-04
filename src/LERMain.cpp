@@ -81,11 +81,11 @@ int main(int argc, char **argv) {
 
   // Lower to LLVM Dialect
   PassManager PM = PassManager::on<ModuleOp>(LERMLIR.getContext());
-  /*PM.addPass(createInjectInductionVars());*/
-  /*PM.addPass(createConvertToArith());*/
-  /*PM.addPass(createConvertArrayAccToMemref());*/
-  /*PM.addPass(createConvertLoopsToAffineSCF());*/
-  /*PM.addPass(createConvertToLLVM());*/
+  PM.addPass(createInjectInductionVars());
+  PM.addPass(createConvertToArith());
+  PM.addPass(createConvertArrayAccToMemref());
+  PM.addPass(createConvertLoopsToAffineSCF());
+  PM.addPass(createConvertToLLVM());
 
   if (failed(PM.run(LERMLIR)))
     LERMLIR.emitError("Pass error!");
