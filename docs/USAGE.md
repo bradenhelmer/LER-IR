@@ -48,3 +48,4 @@ Additionally, a script is [provided](../scripts/ler-full) to invoked the Java LE
 
     cd build
     ./ler-full case10.ler
+**Warning** The executable lowering stages are currently not working with multilined LER statements.
