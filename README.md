@@ -6,7 +6,7 @@ LER-IR is an frontenc compiler and MLIR dialect for compiling LER notation into 
 To get started with this project, ensure you have the following installed on your system:
 
 - [CMake >= v3.22](https://cmake.org/download/)
-- [LLVM/MLIR Libraries >= v18.1.6](https://github.com/llvm/llvm-project)
+- [LLVM/MLIR Libraries == v18.1.6](https://github.com/llvm/llvm-project) (19.1.4 Produces bugs)
   - Instructions for build LLVM with MLIR can be found [here](https://mlir.llvm.org/getting_started/).
 - [Ninja](https://ninja-build.org/) build system, this is _optional_ but recommended.
 
