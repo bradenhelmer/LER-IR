@@ -45,6 +45,8 @@ static inline bool isArithOp(Operation *Op) {
          isa<DivOp>(*Op);
 }
 
+static inline bool isConstantOp(Operation *Op) { return isa<ConstantOp>(*Op); }
+
 void moduleToExecutable(mlir::ModuleOp, llvm::StringRef);
 
 } // namespace ler

@@ -36,6 +36,7 @@ using mlir::success;
 using mlir::Value;
 using mlir::affine::AffineDialect;
 using mlir::arith::ArithDialect;
+using mlir::arith::IndexCastOp;
 using mlir::cf::ControlFlowDialect;
 using mlir::func::FuncDialect;
 using mlir::memref::AllocOp;

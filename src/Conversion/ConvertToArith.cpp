@@ -22,8 +22,19 @@ struct BinaryOpLowering : public OpConversionPattern<LERBinOp> {
   matchAndRewrite(LERBinOp Op,
                   typename OpConversionPattern<LERBinOp>::OpAdaptor Adaptor,
                   ConversionPatternRewriter &ReWriter) const override {
-    auto NewBinOp = ReWriter.create<ArithBinOp>(
-        Op.getLoc(), Op.getType(), Adaptor.getLHS(), Adaptor.getRHS());
+    auto LHS = Adaptor.getLHS();
+    auto RHS = Adaptor.getRHS();
+    if (!LHS.getType().isInteger(64)) {
+      LHS = ReWriter.create<IndexCastOp>(LHS.getLoc(), ReWriter.getI64Type(),
+                                         LHS);
+    }
+
+    if (!RHS.getType().isInteger(64)) {
+      RHS = ReWriter.create<IndexCastOp>(RHS.getLoc(), ReWriter.getI64Type(),
+                                         RHS);
+    }
+    auto NewBinOp =
+        ReWriter.create<ArithBinOp>(Op.getLoc(), Op.getType(), LHS, RHS);
     ReWriter.replaceOp(Op, NewBinOp.getResult());
     return success();
   }

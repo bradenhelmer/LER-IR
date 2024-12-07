@@ -3,6 +3,7 @@
 // ConvertLoopsToAffineSCF pass implementation.
 #include <ler-ir/Analysis/Misc.h>
 #include <ler-ir/Passes.h>
+#include <map>
 
 using mlir::AffineMap;
 using mlir::AffineMapAttr;
@@ -13,6 +14,7 @@ using mlir::IntegerAttr;
 using mlir::Region;
 using mlir::StringAttr;
 using mlir::SymbolRefAttr;
+using mlir::affine::AffineApplyOp;
 using mlir::affine::AffineDialect;
 using mlir::affine::AffineForOp;
 using mlir::affine::AffineMinOp;
@@ -31,14 +33,7 @@ namespace ler {
 } // namespace ler
 
 namespace {
-StringMap<BlockArgument> NewAffineBlkArgs;
-
-BlockArgument getNewAffineBlkArgFromName(StringRef Var) {
-  if (NewAffineBlkArgs.find(Var) != NewAffineBlkArgs.end()) {
-    return NewAffineBlkArgs[Var];
-  }
-  return nullptr;
-}
+static std::map<std::string, BlockArgument> NewAffineBlkArgs;
 
 static void flattenRegion(Region &Region) {
   if (Region.empty() || Region.hasOneBlock()) {
@@ -68,7 +63,7 @@ public:
                   ConversionPatternRewriter &ReWriter) const override {
 
     AffineForOp ForOp;
-    BlockArgument BlkArg;
+    BlockArgument BlkArg = Op->getRegion(0).getArgument(0);
     int64_t LB = Op->template getAttrOfType<IntegerAttr>("LowerBound").getInt();
 
     // First resolve upper bound of for loop.
@@ -76,7 +71,6 @@ public:
 
     if (auto SymRef = dyn_cast<SymbolRefAttr>(UBAttr)) {
 
-      BlkArg = Op->getRegion(0).getArgument(0);
       auto Uses = BlkArg.getUses();
 
       unsigned long MaxUB = 1000000;
@@ -101,16 +95,20 @@ public:
 
       // Are we referencing another block arg here? If so, we need to create a
       // AffineMinOp operation to ensure we dont go out of bounds.
-      if ((BlkArg = getNewAffineBlkArgFromName(
-               SymRef.getLeafReference().getValue()))) {
+      if ((BlkArg =
+               NewAffineBlkArgs[SymRef.getLeafReference().getValue().str()])) {
 
-        auto MinMap = AffineMap::get(1, 0,
-                                     {ReWriter.getAffineDimExpr(0),
-                                      ReWriter.getAffineConstantExpr(MaxUB)},
-                                     ReWriter.getContext());
-        auto MinOp = ReWriter.create<AffineMinOp>(UNKNOWN_LOC, MinMap, BlkArg);
-        UBMap = AffineMap::get(0, 1, ReWriter.getAffineSymbolExpr(0));
-        UBOperands = {MinOp->getResult(0)};
+        auto ApplyMap =
+            AffineMap::get(1, 0, {ReWriter.getAffineConstantExpr(MaxUB)},
+                           ReWriter.getContext());
+
+        auto ApplyOp =
+            ReWriter.create<AffineApplyOp>(UNKNOWN_LOC, ApplyMap, BlkArg);
+
+        // Now ApplyOp.getResult() is a valid dimension operand for your UBMap
+        UBMap = AffineMap::get(1, 0, ReWriter.getAffineDimExpr(0),
+                               ReWriter.getContext());
+        UBOperands = {ApplyOp.getResult()};
 
       } else {
         UBMap = AffineMap::get(0, 0, ReWriter.getAffineConstantExpr(MaxUB));
@@ -124,8 +122,8 @@ public:
     }
 
     NewAffineBlkArgs[Op->template getAttrOfType<StringAttr>("LoopIdxVar")
-                         .getValue()] = BlkArg;
-
+                         .getValue()
+                         .str()] = Op->getRegion(0).getArgument(0);
     ReWriter.inlineRegionBefore(Op->getRegion(0), ForOp.getRegion(),
                                 ForOp.getRegion().end());
 

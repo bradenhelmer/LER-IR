@@ -27,7 +27,7 @@ using mlir::func::ReturnOp;
 extern llvm::cl::opt<std::string> InputFilename;
 
 namespace {
-static MLIRContext Context;
+MLIRContext Context;
 static OpBuilder Builder(&Context);
 FuncOp MainFunc;
 static bool InLoopNest = false;
@@ -76,6 +76,8 @@ void LERWhileLoop::codeGen() {
       UNKNOWN_LOC, ConditionExpression->getStrRep(), Subscripts);
   auto *WBlock = new Block();
   WhileLoop->getRegion(0).push_back(WBlock);
+  Builder.setInsertionPointToEnd(WBlock);
+  Builder.create<LoopTerminatorOp>(UNKNOWN_LOC);
   Builder.setInsertionPointToStart(WBlock);
 }
 
@@ -122,7 +124,8 @@ Value LERArrayAccessExpression::codeGen() {
   for (const auto &Index : Indicies) {
     auto IndexVal = Index->codeGen();
 
-    if (isArithOp(IndexVal.getDefiningOp())) {
+    if (isArithOp(IndexVal.getDefiningOp()) ||
+        isConstantOp(IndexVal.getDefiningOp())) {
       IndexVal = Builder.create<IndexCastOp>(IndexVal.getLoc(),
                                              Builder.getIndexType(), IndexVal);
     }

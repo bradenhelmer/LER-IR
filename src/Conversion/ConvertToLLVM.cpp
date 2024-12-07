@@ -25,14 +25,12 @@ struct ConvertToLLVMPass
   using ConvertToLLVMBase::ConvertToLLVMBase;
 
   void runOnOperation() override {
-    LLVMConversionTarget target(getContext());
+    LLVMConversionTarget LLVMTarget(getContext());
 
     auto &Ctx = getContext();
     Ctx.loadDialect<ControlFlowDialect>();
 
-    target.addIllegalDialect<AffineDialect, ArithDialect, FuncDialect,
-                             MemRefDialect>();
-    target.addLegalOp<ModuleOp>();
+    LLVMTarget.addLegalOp<ModuleOp>();
 
     LLVMTypeConverter TC(&getContext());
 
@@ -44,8 +42,8 @@ struct ConvertToLLVMPass
     mlir::cf::populateControlFlowToLLVMConversionPatterns(TC, patterns);
     mlir::populateFuncToLLVMConversionPatterns(TC, patterns);
 
-    if (failed(
-            applyFullConversion(getOperation(), target, std::move(patterns)))) {
+    if (failed(applyFullConversion(getOperation(), LLVMTarget,
+                                   std::move(patterns)))) {
       signalPassFailure();
     }
   }

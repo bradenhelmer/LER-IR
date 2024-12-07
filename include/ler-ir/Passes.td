@@ -168,7 +168,7 @@ def ConvertToArith : Pass<"convert-to-arith", "mlir::ModuleOp"> {
 def ConvertToLLVM : Pass<"convert-to-llvm", "mlir::ModuleOp"> {
   let summary = "Converts all intermediary dialects (affine, arith, memref, scf) to llvm";
   let description = [{}];
-  let dependentDialects = ["::mlir::LLVM::LLVMDialect"];
+  let dependentDialects = ["::mlir::LLVM::LLVMDialect"]; 
 }
 
 // TRANSFORMS

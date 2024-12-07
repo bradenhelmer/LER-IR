@@ -51,7 +51,7 @@ static std::error_code EC;
 
 int main(int argc, char **argv) {
   cl::ParseCommandLineOptions(argc, argv);
-  llvm::InitLLVM(argc, argv);
+  /*llvm::InitLLVM(argc, argv);*/
   OUTS << "Running ler-compile tool...\n";
 
   auto RawFileName = InputFilename.substr(InputFilename.find_last_of('/') + 1);
